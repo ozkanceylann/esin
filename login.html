@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ESİN Sipariş Takip Sistemi - Giriş</title>
+
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: "Segoe UI", sans-serif;
+      background: linear-gradient(135deg, #0b2e63, #1a3d7c);
+    }
+
+    .login-box {
+      width: 90%;
+      max-width: 380px;
+      background: #ffffff;
+      padding: 35px;
+      border-radius: 16px;
+      box-shadow: 0 10px 35px rgba(0,0,0,0.35);
+      animation: fadeIn 0.3s ease;
+      text-align: center;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .logo {
+      width: 140px;
+      margin: 0 auto 20px auto;
+    }
+
+    h2 {
+      color: #1a3d7c;
+      margin-bottom: 25px;
+      font-size: 22px;
+      font-weight: bold;
+    }
+
+    .form-group { margin-bottom: 18px; text-align: left; }
+
+    label {
+      font-size: 14px;
+      font-weight: 600;
+      color: #1a3d7c;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      font-size: 14px;
+      border-radius: 10px;
+      border: 1px solid #b8c6d9;
+      margin-top: 6px;
+      background: #f7f9fc;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #1a3d7c;
+      background: #fff;
+      box-shadow: 0 0 0 2px rgba(23,78,166,0.2);
+    }
+
+    .btn-login {
+      width: 100%;
+      padding: 12px;
+      font-size: 15px;
+      border: none;
+      border-radius: 10px;
+      background: #1a3d7c;
+      color: #fff;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: 0.2s;
+    }
+
+    .btn-login:hover { background: #153468; }
+
+    .error {
+      margin-top: 12px;
+      color: #e74c3c;
+      font-size: 14px;
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="login-box">
+    <img src="esin_logo.png" class="logo" alt="ESİN Logo" />
+
+    <h2>ESİN Sipariş Takip Sistemi</h2>
+
+    <div class="form-group">
+      <label>Email</label>
+      <input id="email" type="email" placeholder="Email adresiniz">
+    </div>
+
+    <div class="form-group">
+      <label>Şifre</label>
+      <input id="password" type="password" placeholder="Şifreniz">
+    </div>
+
+    <button class="btn-login" onclick="login()">Giriş Yap</button>
+
+    <div class="error" id="errorBox"></div>
+  </div>
+
+  <!-- MODULE SCRIPT -->
+  <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+    const SUPABASE_URL = "https://jarsxtpqzqzhlshpmgot.supabase.co";
+    const SUPABASE_KEY =
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphcnN4dHBxenF6aGxzaHBtZ290Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyODExMTcsImV4cCI6MjA3Nzg1NzExN30.98oYONSkb8XSDrfGW2FxhFmt2BLB5ZRo3Ho50GhZYgE";
+
+    const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    async function login() {
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const errorBox = document.getElementById("errorBox");
+
+      errorBox.style.display = "none";
+
+      const { data, error } = await db.auth.signInWithPassword({ email, password });
+
+      if (error) {
+        errorBox.innerText = "Hatalı email veya şifre!";
+        errorBox.style.display = "block";
+        return;
+      }
+
+      const user = data.user;
+      const meta =
+        user.user_metadata && Object.keys(user.user_metadata).length > 0
+          ? user.user_metadata
+          : user.raw_user_meta_data;
+
+      if (!meta.firma || meta.firma.toLowerCase() !== "esin") {
+        errorBox.innerText = "Bu panele sadece ESİN kullanıcıları giriş yapabilir!";
+        errorBox.style.display = "block";
+        await db.auth.signOut();
+        return;
+      }
+
+      localStorage.setItem("firma", meta.firma);
+      localStorage.setItem("rol", meta.rol);
+      localStorage.setItem("session", JSON.stringify(data.session));
+
+      window.location.href = "index.html";
+    }
+
+    window.login = login;
+  </script>
+
+</body>
+</html>
