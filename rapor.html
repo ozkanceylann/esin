@@ -3,70 +3,75 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
   <title>Raporlar</title>
 
   <!-- CONFIG -->
   <script src="config.js"></script>
 
-  <!-- STYLES -->
+  <!-- CSS -->
   <link rel="stylesheet" href="style.css" />
 
-  <!-- Supabase -->
+  <!-- SUPABASE & CHARTS -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
-    .report-card {
-      background: #fff;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
-      flex: 1;
-      min-width: 220px;
+    .report-card{
+      background:#fff;padding:20px;border-radius:12px;
+      box-shadow:0 2px 8px rgba(0,0,0,.12);flex:1;min-width:220px
     }
-    .report-card h3 { margin: 0; font-size: 16px; }
-    .report-card .value { margin-top: 10px; font-size: 26px; font-weight: bold; }
+    .report-card h3{margin:0;font-size:16px}
+    .report-card .value{margin-top:8px;font-size:24px;font-weight:700}
+    .toolbar{
+      background:#fff;padding:16px;border-radius:12px;
+      box-shadow:0 2px 8px rgba(0,0,0,.12);
+      margin-bottom:20px;display:flex;gap:10px;flex-wrap:wrap;
+      align-items:center
+    }
+    select, input[type="date"]{
+      padding:10px;border:1px solid #ccc;border-radius:8px
+    }
   </style>
 </head>
-
 <body>
 
 <div class="content-area" style="margin-left:260px; padding:25px;">
 
-  <h2 style="margin-bottom:20px;">📊 Raporlama Ekranı</h2>
+  <h2 style="margin-bottom:14px;">📊 Raporlama Ekranı</h2>
 
-  <!-- TARİH FİLTRESİ -->
-  <div style="background:#fff;padding:20px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.12);margin-bottom:25px;">
-    <label><b>Başlangıç Tarihi:</b></label>
-    <input type="date" id="startDate" />
+  <!-- FİLTRE ARAÇLARI -->
+  <div class="toolbar">
+    <label><b>Başlangıç:</b></label><input type="date" id="startDate"/>
+    <label><b>Bitiş:</b></label><input type="date" id="endDate"/>
 
-    &nbsp;&nbsp;
-
-    <label><b>Bitiş Tarihi:</b></label>
-    <input type="date" id="endDate" />
+    <label><b>Durum:</b></label>
+    <select id="statusSel">
+      <option value="">Hepsi</option>
+      <option>Bekliyor</option>
+      <option>Hazırlandı</option>
+      <option>Kargolandı</option>
+      <option>Tamamlandı</option>
+      <option>Sorunlu</option>
+      <option>İptal</option>
+    </select>
 
     <button class="btn-primary" onclick="loadReport()">Raporla</button>
+    <button class="btn-secondary" onclick="exportCSV()">CSV İndir</button>
+    <button class="btn-close" onclick="window.location='index.html'">Geri</button>
   </div>
 
-  <!-- GRAFİK 1 -->
-  <div style="background:#fff;padding:20px;border-radius:12px;margin-bottom:25px;box-shadow:0 2px 8px rgba(0,0,0,0.12);">
-    <h3>📈 Günlük Sipariş Grafiği</h3>
+  <div id="summaryCards" style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:20px;"></div>
+
+  <div style="background:#fff;padding:20px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.12);margin-bottom:20px;">
+    <h3>📈 Günlük Sipariş</h3>
     <canvas id="dailyChart" style="max-height:300px;"></canvas>
   </div>
 
-  <!-- GRAFİK 2 -->
-  <div style="background:#fff;padding:20px;border-radius:12px;margin-bottom:25px;box-shadow:0 2px 8px rgba(0,0,0,0.12);">
-    <h3>📞 Sipariş Alan Kişiye Göre Satış</h3>
+  <div style="background:#fff;padding:20px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.12);margin-bottom:20px;">
+    <h3>📞 Sipariş Alan (Telefon)</h3>
     <canvas id="salesByTel" style="max-height:300px;"></canvas>
   </div>
 
-  <!-- ÖZET KARTLAR -->
-  <div id="summaryCards" style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:25px;"></div>
-
-  <!-- RAPOR TABLOSU -->
   <div class="table-wrapper">
     <table class="orders-table">
       <thead>
@@ -84,157 +89,167 @@
   </div>
 </div>
 
+
+
+<!-- ===================== -->
+<!--   RAPOR SCRIPTİ       -->
+<!-- ===================== -->
 <script>
-/* ===========================
-   CONFIG YÜKLENENE KADAR BEKLE
-=========================== */
-async function initConfig() {
+(async ()=>{
   await window.waitConfig();
-}
-await initConfig();
 
-/* ===========================
-   Supabase
-=========================== */
-const db = supabase.createClient(
-  "https://jarsxtpqzqzhlshpmgot.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphcnN4dHBxenF6aGxzaHBtZ290Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyODExMTcsImV4cCI6MjA3Nzg1NzExN30.98oYONSkb8XSDrfGW2FxhFmt2BLB5ZRo3Ho50GhZYgE"
-);
+  const TABLE = CONFIG.table;
+  const db = supabase.createClient(
+    "https://jarsxtpqzqzhlshpmgot.supabase.co",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphcnN4dHBxenF6aGxzaHBtZ290Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyODExMTcsImV4cCI6MjA3Nzg1NzExN30.98oYONSkb8XSDrfGW2FxhFmt2BLB5ZRo3Ho50GhZYgE"
+  );
 
-// Tablo adı markadan gelir
-const TABLE = CONFIG.table;
+  let chart1=null, chart2=null;
+  let lastRows=[];
 
-let chart1 = null;
-let chart2 = null;
 
-/* ===========================
-   RAPOR VERİSİ YÜKLE
-=========================== */
-async function loadReport() {
-  const start = startDate.value;
-  const end = endDate.value;
+  /* ==============================
+        RAPOR YÜKLEME
+  ============================== */
+  async function loadReport(){
+    const s = startDate.value;
+    const e = endDate.value;
+    const st = statusSel.value;
 
-  let q = db.from(TABLE).select("*");
+    let q = db.from(TABLE).select("*");
 
-  if (start) q = q.gte("tarih", start);
-  if (end)   q = q.lte("tarih", end + " 23:59:59");
+    if(s) q = q.gte("tarih", s);
+    if(e) q = q.lte("tarih", e + " 23:59:59");
+    if(st) q = q.eq("kargo_durumu", st);
 
-  q = q.order("tarih", { ascending: false });
+    q = q.order("tarih",{ascending:false});
 
-  const { data, error } = await q;
+    const { data, error } = await q;
+    if(error){ alert("Rapor hatası: " + error.message); return; }
 
-  if (error) {
-    alert("Raporlama hatası: " + error.message);
-    return;
+    lastRows = data || [];
+    renderReport(lastRows);
   }
 
-  renderReport(data);
-}
 
-/* ===========================
-   RAPOR RENDER
-=========================== */
-function renderReport(rows) {
-  const table = document.getElementById("reportTable");
-  const summary = document.getElementById("summaryCards");
+  /* ==============================
+        TABLO + ÖZET + GRAFİK
+  ============================== */
+  function renderReport(rows){
+    const table = document.getElementById("reportTable");
+    const summary = document.getElementById("summaryCards");
+    table.innerHTML=""; summary.innerHTML="";
 
-  table.innerHTML = "";
-  summary.innerHTML = "";
+    if(!rows.length){
+      table.innerHTML = `<tr><td colspan="6">Kayıt yok</td></tr>`;
+      buildCharts([]); 
+      return;
+    }
 
-  if (!rows || rows.length === 0) {
-    table.innerHTML = `<tr><td colspan="6">Kayıt bulunamadı</td></tr>`;
-    return;
-  }
+    let toplam=0, adet=rows.length, kargolanan=0;
+    rows.forEach(r=>{
+      toplam += Number(r.toplam_tutar||0);
+      if(r.kargo_durumu==="Kargolandı") kargolanan++;
+      table.innerHTML += `
+        <tr>
+          <td>${r.siparis_no}</td>
+          <td>${r.ad_soyad}</td>
+          <td>${r.toplam_tutar} TL</td>
+          <td>${r.kargo_durumu}</td>
+          <td>${(r.tarih||"").substring(0,10)}</td>
+          <td>${r.siparis_tel||""}</td>
+        </tr>`;
+    });
 
-  let toplamTutar = 0;
-  let adet = rows.length;
-  let kargolanan = rows.filter(r => r.kargo_durumu === "Kargolandı").length;
-
-  rows.forEach(r => {
-    toplamTutar += Number(r.toplam_tutar || 0);
-
-    table.innerHTML += `
-      <tr>
-        <td>${r.siparis_no}</td>
-        <td>${r.ad_soyad}</td>
-        <td>${r.toplam_tutar} TL</td>
-        <td>${r.kargo_durumu}</td>
-        <td>${(r.tarih || "").substring(0,10)}</td>
-        <td>${r.siparis_tel}</td>
-      </tr>
+    summary.innerHTML = `
+      <div class="report-card"><h3>Toplam Sipariş</h3><div class="value">${adet}</div></div>
+      <div class="report-card"><h3>Toplam Tutar</h3><div class="value">${toplam} TL</div></div>
+      <div class="report-card"><h3>Kargolanan</h3><div class="value">${kargolanan}</div></div>
     `;
-  });
 
-  summary.innerHTML = `
-    <div class="report-card">
-      <h3>Toplam Sipariş</h3>
-      <div class="value">${adet}</div>
-    </div>
+    buildCharts(rows);
+  }
 
-    <div class="report-card">
-      <h3>Toplam Tutar</h3>
-      <div class="value">${toplamTutar} TL</div>
-    </div>
 
-    <div class="report-card">
-      <h3>Kargolanan</h3>
-      <div class="value">${kargolanan}</div>
-    </div>
-  `;
+  /* ==============================
+        GRAFİKLER
+  ============================== */
+  function buildCharts(rows){
+    const daily={};
+    rows.forEach(r=>{
+      const d=(r.tarih||"").substring(0,10);
+      daily[d]=(daily[d]||0)+1;
+    });
 
-  buildCharts(rows);
-}
+    const labels1=Object.keys(daily);
+    const values1=Object.values(daily);
 
-/* ===========================
-   GRAFİKLER
-=========================== */
-function buildCharts(rows) {
+    if(chart1) chart1.destroy();
+    chart1 = new Chart(document.getElementById("dailyChart"),{
+      type:"line",
+      data:{
+        labels:labels1,
+        datasets:[{ label:"Günlük Sipariş", data:values1, borderWidth:3 }]
+      }
+    });
 
-  /* ---- Günlük Sipariş Grafiği ---- */
-  const daily = {};
-  rows.forEach(r => {
-    const d = (r.tarih || "").substring(0,10);
-    daily[d] = (daily[d] || 0) + 1;
-  });
+    const byTel={};
+    rows.forEach(r=>{
+      const key=r.siparis_tel||"Bilinmiyor";
+      byTel[key]=(byTel[key]||0)+1;
+    });
 
-  const labels1 = Object.keys(daily);
-  const values1 = Object.values(daily);
+    const labels2=Object.keys(byTel);
+    const values2=Object.values(byTel);
 
-  if (chart1) chart1.destroy();
+    if(chart2) chart2.destroy();
+    chart2 = new Chart(document.getElementById("salesByTel"),{
+      type:"bar",
+      data:{
+        labels:labels2,
+        datasets:[{ label:"Sipariş Sayısı", data:values2, borderWidth:2 }]
+      }
+    });
+  }
 
-  chart1 = new Chart(document.getElementById("dailyChart"), {
-    type: "line",
-    data: {
-      labels: labels1,
-      datasets: [
-        { label: "Günlük Sipariş", data: values1, borderWidth: 3 }
-      ]
-    }
-  });
 
-  /* ---- Sipariş Alan Kişi Grafiği ---- */
-  const byUser = {};
-  rows.forEach(r => {
-    const key = r.siparis_tel || "Bilinmiyor";
-    byUser[key] = (byUser[key] || 0) + 1;
-  });
+  /* ==============================
+        CSV EXPORT
+  ============================== */
+  function exportCSV(){
+    if(!lastRows.length){ alert("Dışa aktarılacak veri yok"); return; }
 
-  const labels2 = Object.keys(byUser);
-  const values2 = Object.values(byUser);
+    const headers = ["siparis_no","ad_soyad","toplam_tutar","kargo_durumu","tarih","siparis_tel"];
 
-  if (chart2) chart2.destroy();
+    const rows = lastRows.map(r=>[
+      r.siparis_no, r.ad_soyad, r.toplam_tutar,
+      r.kargo_durumu, (r.tarih||"").substring(0,19),
+      r.siparis_tel||""
+    ]);
 
-  chart2 = new Chart(document.getElementById("salesByTel"), {
-    type: "bar",
-    data: {
-      labels: labels2,
-      datasets: [
-        { label: "Sipariş Sayısı", data: values2, borderWidth: 2 }
-      ]
-    }
-  });
-}
+    const csv = [
+      headers.join(","), 
+      ...rows.map(a=>a.map(x=>`"${String(x??"").replace(/"/g,'""')}"`).join(","))
+    ].join("\n");
 
+    const blob = new Blob([csv],{type:"text/csv;charset=utf-8;"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href=url; a.download="rapor.csv"; a.click();
+    URL.revokeObjectURL(url);
+  }
+
+
+  /* ==============================
+       GLOBAL EXPORT
+  ============================== */
+  window.loadReport = loadReport;
+  window.exportCSV = exportCSV;
+
+  /* BAŞLANGIÇTA OTOMATİK RAPOR YÜKLE */
+  loadReport();
+
+})();
 </script>
 
 </body>
