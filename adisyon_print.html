@@ -2,87 +2,76 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<title>Adisyon Fişi</title>
+<title>♕️ Fiş Yazdır</title>
 
-<script src="config.js"></script>
-
+<!-- TERMAL YAZICI AYARLARI -->
 <style>
-  @page { size: 80mm auto; margin: 0; }
+@page {
+  size: 80mm auto;
+  margin: 0;
+}
 
-  html, body {
-    width: 80mm;
-    margin: 0;
-    padding: 0 4px;
-    font-family: Arial, sans-serif;
-    font-size: 12px;
-    line-height: 1.25;
-  }
+html, body {
+  width: 80mm;
+  margin: 0;
+  padding: 0 4px;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  line-height: 1.25;
+}
 
-  .logo-box {
-    text-align: center;
-    margin: 6px 0;
-  }
+/* Logo */
+.logo {
+  text-align: center;
+  margin: 6px 0 4px 0;
+}
+.logo img {
+  width: 120px;
+  height: auto;
+}
 
-  .logo-box img {
-    width: 120px;
-    height: auto;
-  }
+/* Başlık */
+h2 {
+  text-align: center;
+  font-size: 13px;
+  margin: 4px 0;
+}
 
-  h2 {
-    text-align: center;
-    font-size: 14px;
-    margin: 4px 0;
-  }
+/* İçerik */
+#content {
+  width: 100%;
+  word-wrap: break-word;
+}
 
-  .line {
-    border-bottom: 1px dashed #000;
-    margin: 6px 0;
-  }
-
-  .row { margin: 3px 0; }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 6px;
-  }
-
-  table th, table td {
-    padding: 3px 0;
-    border-bottom: 1px dashed #000;
-    font-size: 12px;
-  }
-
-  .total-row td {
-    font-weight: bold;
-    border-top: 1px dashed #000;
-  }
+/* Kesikli çizgi */
+.line {
+  border-bottom: 1px dashed #000;
+  margin: 6px 0;
+}
 </style>
-</head>
 
+</head>
 <body>
 
-<div class="logo-box">
-  <img id="brandLogo" src="">
+<!-- LOGO -->
+<div class="logo">
+  <img src="queen_logo.png">
 </div>
 
-<h2>ADİSYON</h2>
+<h2>♕️ QUEEN SİPARİŞ</h2>
 
+<!-- JS’den içeriği basacağımız yer -->
 <div id="content"></div>
 
 <script>
-// LOGOYU CONFIG'TEN AL
-document.addEventListener("DOMContentLoaded", async () => {
-  await window.waitConfig();
-  document.getElementById("brandLogo").src = CONFIG.logo;
-});
-
-// ADİSYON YAZDIR
+/* ============================================================
+   BU FONKSİYON app.js TARAFINDAN ÇAĞRILIR
+============================================================ */
 window.doPrint = function () {
   setTimeout(() => {
     window.print();
     setTimeout(() => window.close(), 300);
-  }, 200);
+  }, 150);
 };
 </script>
 

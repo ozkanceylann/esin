@@ -109,11 +109,16 @@ function renderTable(rows){
   rows.forEach(o=>{
     const tr = document.createElement("tr");
 
-    const durumText = currentTab==="kargolandi" ? (o.shipmentStatus ?? "—") : o.kargo_durumu;
+   const durumText = ["kargolandi", "tamamlandi", "sorunlu"].includes(currentTab)
+    ? (o.shipmentStatus ?? "—")
+    : o.kargo_durumu;
 
-    const actionBtn = currentTab==="kargolandi"
-      ? `<button class="btn-open" onclick="event.stopPropagation(); openTrackingUrl('${o.kargo_takip_url ?? ""}')">Sorgula</button>`
-      : `<button class="btn-open">Aç</button>`;
+    const isTrackingTab = ["kargolandi", "tamamlandi", "sorunlu"].includes(currentTab);
+
+const actionBtn = isTrackingTab
+  ? `<button class="btn-open" onclick="event.stopPropagation(); openTrackingUrl('${o.kargo_takip_url ?? ""}')">Sorgula</button>`
+  : `<button class="btn-open">Aç</button>`;
+
 
     tr.innerHTML = `
       <td>${o.siparis_no}</td>
@@ -162,7 +167,7 @@ async function openOrder(id){
 }
 function closeModal(){ document.getElementById("orderModal").style.display = "none"; }
 
-function renderDetails(){
+function renderDetails() {
   const d = selectedOrder;
 
   /* — ÖNCE TÜM BUTONLARI SIFIRLA — */
@@ -170,6 +175,7 @@ function renderDetails(){
     btn.style.display = "inline-block";
   });
 
+  // DETAY HTML
   document.getElementById("orderDetails").innerHTML = `
     <p><b>No:</b> ${d.siparis_no}</p>
     <p><b>İsim:</b> ${d.ad_soyad}</p>
@@ -191,26 +197,48 @@ function renderDetails(){
     <p><b>Not:</b> ${d.notlar ?? "-"}</p>
   `;
 
-  const iptal = d.kargo_durumu==="İptal";
-  const kargo = d.kargo_durumu==="Kargolandı";
-  const tamam = d.kargo_durumu==="Tamamlandı";
+  /* === SOR butonu kontrolü === */
+  try {
+    const sorBtn = document.querySelector(".btn-mini");
+    if (sorBtn) {
+      if (["Bekliyor", "Hazırlandı"].includes(d.kargo_durumu)) {
+        sorBtn.style.display = "inline-block";
+      } else {
+        sorBtn.style.display = "none";
+      }
+    }
+  } catch (e) {}
+
+// ==== Hazırlandı DURUMUNDA DÜZENLE butonunu gizle ====
+try {
+  const duzenleBtn = [...document.querySelectorAll("#actionButtons button")]
+    .find(btn => btn.textContent.trim() === "Düzenle");
+
+  if (duzenleBtn && d.kargo_durumu === "Hazırlandı") {
+    duzenleBtn.style.display = "none";
+  }
+} catch (e) {}
+  /* — DURUM KURALLARI — */
+
+  const iptal = d.kargo_durumu === "İptal";
+  const kargo = d.kargo_durumu === "Kargolandı";
+  const tamam = d.kargo_durumu === "Tamamlandı";
 
   /* BEKLEYEN — HAZIRLANDI — VS DURUMLARI */
   document.getElementById("btnPrepare").style.display =
-    (d.kargo_durumu==="Bekliyor") ? "inline-block" : "none";
+    (d.kargo_durumu === "Bekliyor") ? "inline-block" : "none";
 
   document.getElementById("btnCargo").style.display =
-    (d.kargo_durumu==="Hazırlandı") ? "inline-block" : "none";
+    (d.kargo_durumu === "Hazırlandı") ? "inline-block" : "none";
 
   document.getElementById("btnBarcode").style.display =
     kargo ? "inline-block" : "none";
 
   document.getElementById("btnWaiting").style.display =
-    (!["Bekliyor","Kargolandı"].includes(d.kargo_durumu)) ? "inline-block" : "none";
+    (!["BekBekliyor", "Kargolandı"].includes(d.kargo_durumu)) ? "inline-block" : "none";
 
-
-  /* — KARGOLANDI DURUMUNDA — (Queen Kuralları) */
-  if(kargo){
+  /* — KARGOLANDI — düzenle ve diğer butonlar kapalı */
+  if (kargo) {
     document.querySelector("#actionButtons .btn-warning").style.display = "none"; // düzenle
     document.getElementById("btnPrepare").style.display = "none";
     document.getElementById("btnCargo").style.display = "none";
@@ -218,41 +246,112 @@ function renderDetails(){
   }
 
   /* — TAMAMLANAN — sadece kapat */
-  if(tamam){
-    document.querySelectorAll("#actionButtons button").forEach(btn=>btn.style.display="none");
+  if (tamam) {
+    document.querySelectorAll("#actionButtons button").forEach(btn => btn.style.display = "none");
     document.querySelector("#actionButtons .btn-close").style.display = "inline-block";
   }
 
   /* — İPTAL DURUMU — */
-  document.getElementById("actionButtons").style.display = iptal ? "none":"flex";
-  document.getElementById("restoreButtons").style.display= iptal ? "flex":"none";
+  document.getElementById("actionButtons").style.display = iptal ? "none" : "flex";
+  document.getElementById("restoreButtons").style.display = iptal ? "flex" : "none";
 
-  document.getElementById("editButtons").style.display="none";
-  document.getElementById("cancelForm").style.display="none";
+  document.getElementById("editButtons").style.display = "none";
+  document.getElementById("cancelForm").style.display = "none";
 }
 
 /* ============================================================
    ŞEHİR/İLÇE KODU SOR
 ============================================================ */
-async function queryCityDistrictCodes(){
+async function queryCityDistrictCodes() {
   toast("Kodlar sorgulanıyor...");
 
-  const res = await fetch(WH_SEHIR_ILCE, {
-    method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body: JSON.stringify(selectedOrder)
-  });
-  if(!res.ok) return toast("Kod bulunamadı");
+  const cityName = selectedOrder.sehir?.trim();
+  const districtName = selectedOrder.ilce?.trim();
 
-  const d = await res.json();
+  if (!cityName || !districtName) {
+    return toast("Şehir veya ilçe bilgisi eksik!");
+  }
 
-  await db.from(TABLE)
-    .update({ sehir_kodu:d.sehir_kodu, ilce_kodu:d.ilce_kodu })
+  // === Türkçe karakterleri normalize eden fonksiyon ===
+  const normalize = (str) => {
+    return (str || "")
+      .toLowerCase()
+      .replace(/ç/g, "c")
+      .replace(/ğ/g, "g")
+      .replace(/ı/g, "i")
+      .replace(/ö/g, "o")
+      .replace(/ş/g, "s")
+      .replace(/ü/g, "u")
+      .replace(/[^a-z0-9]/g, "");
+  };
+
+  const normCity = normalize(cityName);
+  const normDistrict = normalize(districtName);
+
+  // === Tüm şehirleri çekiyoruz ===
+  const { data: cityRows, error: cityErr } = await db
+    .from("sehir")
+    .select("id, name");
+
+  if (cityErr || !cityRows) {
+    return toast("Şehir listesi alınamadı!");
+  }
+
+  // === Normalize karşılaştırma ile şehir bul ===
+  let foundCity = null;
+  for (const c of cityRows) {
+    if (normalize(c.name) === normCity) {
+      foundCity = c;
+      break;
+    }
+  }
+
+  if (!foundCity) {
+    return toast("Şehir bulunamadı: " + cityName);
+  }
+
+  const sehir_kodu = foundCity.id;
+
+  // === İlçeleri çek (sadece bu şehre ait) ===
+  const { data: distRows, error: distErr } = await db
+    .from("ilce")
+    .select("code, name")
+    .eq("city_id", sehir_kodu);
+
+  if (distErr || !distRows) {
+    return toast("İlçe listesi alınamadı!");
+  }
+
+  // === İlçe eşle → normalize ederek ===
+  let foundDistrict = null;
+  for (const i of distRows) {
+    if (normalize(i.name) === normDistrict) {
+      foundDistrict = i;
+      break;
+    }
+  }
+
+  if (!foundDistrict) {
+    return toast("İlçe bulunamadı: " + districtName);
+  }
+
+  const ilce_kodu = foundDistrict.code;
+
+  // === Supabase'de siparişi güncelle ===
+  await db
+    .from(TABLE)
+    .update({
+      sehir_kodu,
+      ilce_kodu
+    })
     .eq("siparis_no", selectedOrder.siparis_no);
 
-  toast("Kodlar güncellendi");
+  toast("Kodlar güncellendi ✔");
+
+  // Güncellenmiş halini tekrar aç
   openOrder(selectedOrder.siparis_no);
 }
+
 
 /* ============================================================
    DÜZENLEME
@@ -349,7 +448,7 @@ Bu işlem normal şartlarda geri alınamaz ve iptal durumunda kargo firması ek 
   }catch(e){
     toast("Gönderim hatası");
   }finally{
-    setTimeout(()=>busy.kargola.delete(key), 30000);
+    setTimeout(()=>busy.kargola.delete(key), 20000);
   }
 }
 
@@ -573,3 +672,4 @@ Object.assign(window, {
    BAŞLAT
 ============================================================ */
 loadOrders(true);
+
