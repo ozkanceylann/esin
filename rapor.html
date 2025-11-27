@@ -3,146 +3,239 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <title>Raporlar</title>
 
+  <!-- CONFIG -->
+  <script src="config.js"></script>
+
+  <!-- STYLES -->
   <link rel="stylesheet" href="style.css" />
 
+  <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
-    .report-card{background:#fff;padding:20px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.12);flex:1;min-width:220px;}
-    .report-card h3{margin:0;font-size:16px;color:#333;}
-    .report-card .value{font-size:26px;font-weight:bold;margin-top:10px;}
+    .report-card {
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+      flex: 1;
+      min-width: 220px;
+    }
+    .report-card h3 { margin: 0; font-size: 16px; }
+    .report-card .value { margin-top: 10px; font-size: 26px; font-weight: bold; }
   </style>
 </head>
+
 <body>
 
-  <div class="content-area" style="margin-left:260px; padding:25px;">
-    <h2 style="margin-bottom:20px;">📊 Raporlama Ekranı</h2>
+<div class="content-area" style="margin-left:260px; padding:25px;">
 
-    <div style="background:#fff;padding:20px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.12);margin-bottom:25px;">
-      <label><b>Başlangıç Tarihi:</b></label>
-      <input type="date" id="startDate" />
-      &nbsp;&nbsp;
-      <label><b>Bitiş Tarihi:</b></label>
-      <input type="date" id="endDate" />
-      &nbsp;&nbsp;
-      <button class="btn-primary" onclick="loadReport()">Raporla</button>
-    </div>
+  <h2 style="margin-bottom:20px;">📊 Raporlama Ekranı</h2>
 
-    <div style="background:#fff;padding:20px;border-radius:12px;margin-bottom:25px;box-shadow:0 2px 8px rgba(0,0,0,0.12);">
-      <h3>📈 Günlük Sipariş Sayısı</h3>
-      <canvas id="dailyChart" style="max-height:300px;"></canvas>
-    </div>
+  <!-- TARİH FİLTRESİ -->
+  <div style="background:#fff;padding:20px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.12);margin-bottom:25px;">
+    <label><b>Başlangıç Tarihi:</b></label>
+    <input type="date" id="startDate" />
 
-    <div style="background:#fff;padding:20px;border-radius:12px;margin-bottom:25px;box-shadow:0 2px 8px rgba(0,0,0,0.12);">
-      <h3>📞 Sipariş Alan Kişiye Göre Satış</h3>
-      <canvas id="salesByTel" style="max-height:300px;"></canvas>
-    </div>
+    &nbsp;&nbsp;
 
-    <div id="summaryCards" style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:25px;"></div>
+    <label><b>Bitiş Tarihi:</b></label>
+    <input type="date" id="endDate" />
 
-    <div class="table-wrapper">
-      <table class="orders-table">
-        <thead>
-          <tr>
-            <th>No</th>
-            <th>İsim</th>
-            <th>Tutar</th>
-            <th>Durum</th>
-            <th>Tarih</th>
-            <th>Sipariş Alan Tel</th>
-          </tr>
-        </thead>
-        <tbody id="reportTable"></tbody>
-      </table>
-    </div>
+    <button class="btn-primary" onclick="loadReport()">Raporla</button>
   </div>
 
-  <script>
-    const db = supabase.createClient(
-      "https://jarsxtpqzqzhlshpmgot.supabase.co",
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphcnN4dHBxenF6aGxzaHBtZ290Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyODExMTcsImV4cCI6MjA3Nzg1NzExN30.98oYONSkb8XSDrfGW2FxhFmt2BLB5ZRo3Ho50GhZYgE"
-    );
+  <!-- GRAFİK 1 -->
+  <div style="background:#fff;padding:20px;border-radius:12px;margin-bottom:25px;box-shadow:0 2px 8px rgba(0,0,0,0.12);">
+    <h3>📈 Günlük Sipariş Grafiği</h3>
+    <canvas id="dailyChart" style="max-height:300px;"></canvas>
+  </div>
 
-    const firmaName = (localStorage.getItem("firma") || "esin").toLowerCase();
-    const TABLE = firmaName + "_siparisler";
+  <!-- GRAFİK 2 -->
+  <div style="background:#fff;padding:20px;border-radius:12px;margin-bottom:25px;box-shadow:0 2px 8px rgba(0,0,0,0.12);">
+    <h3>📞 Sipariş Alan Kişiye Göre Satış</h3>
+    <canvas id="salesByTel" style="max-height:300px;"></canvas>
+  </div>
 
-    let chart1=null, chart2=null;
+  <!-- ÖZET KARTLAR -->
+  <div id="summaryCards" style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:25px;"></div>
 
-    async function loadReport(){
-      const start = document.getElementById("startDate").value;
-      const end   = document.getElementById("endDate").value;
+  <!-- RAPOR TABLOSU -->
+  <div class="table-wrapper">
+    <table class="orders-table">
+      <thead>
+        <tr>
+          <th>No</th>
+          <th>İsim</th>
+          <th>Tutar</th>
+          <th>Durum</th>
+          <th>Tarih</th>
+          <th>Sipariş Alan Tel</th>
+        </tr>
+      </thead>
+      <tbody id="reportTable"></tbody>
+    </table>
+  </div>
+</div>
 
-      let q = db.from(TABLE).select("*");
-      if(start) q = q.gte("tarih", start);
-      if(end)   q = q.lte("tarih", end + " 23:59:59");
-      q = q.order("tarih",{ascending:false});
+<script>
+/* ===========================
+   CONFIG YÜKLENENE KADAR BEKLE
+=========================== */
+async function initConfig() {
+  await window.waitConfig();
+}
+await initConfig();
 
-      const { data, error } = await q;
-      if(error){ alert("Rapor hatası: " + error.message); return; }
-      renderReport(data);
+/* ===========================
+   Supabase
+=========================== */
+const db = supabase.createClient(
+  "https://jarsxtpqzqzhlshpmgot.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphcnN4dHBxenF6aGxzaHBtZ290Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyODExMTcsImV4cCI6MjA3Nzg1NzExN30.98oYONSkb8XSDrfGW2FxhFmt2BLB5ZRo3Ho50GhZYgE"
+);
+
+// Tablo adı markadan gelir
+const TABLE = CONFIG.table;
+
+let chart1 = null;
+let chart2 = null;
+
+/* ===========================
+   RAPOR VERİSİ YÜKLE
+=========================== */
+async function loadReport() {
+  const start = startDate.value;
+  const end = endDate.value;
+
+  let q = db.from(TABLE).select("*");
+
+  if (start) q = q.gte("tarih", start);
+  if (end)   q = q.lte("tarih", end + " 23:59:59");
+
+  q = q.order("tarih", { ascending: false });
+
+  const { data, error } = await q;
+
+  if (error) {
+    alert("Raporlama hatası: " + error.message);
+    return;
+  }
+
+  renderReport(data);
+}
+
+/* ===========================
+   RAPOR RENDER
+=========================== */
+function renderReport(rows) {
+  const table = document.getElementById("reportTable");
+  const summary = document.getElementById("summaryCards");
+
+  table.innerHTML = "";
+  summary.innerHTML = "";
+
+  if (!rows || rows.length === 0) {
+    table.innerHTML = `<tr><td colspan="6">Kayıt bulunamadı</td></tr>`;
+    return;
+  }
+
+  let toplamTutar = 0;
+  let adet = rows.length;
+  let kargolanan = rows.filter(r => r.kargo_durumu === "Kargolandı").length;
+
+  rows.forEach(r => {
+    toplamTutar += Number(r.toplam_tutar || 0);
+
+    table.innerHTML += `
+      <tr>
+        <td>${r.siparis_no}</td>
+        <td>${r.ad_soyad}</td>
+        <td>${r.toplam_tutar} TL</td>
+        <td>${r.kargo_durumu}</td>
+        <td>${(r.tarih || "").substring(0,10)}</td>
+        <td>${r.siparis_tel}</td>
+      </tr>
+    `;
+  });
+
+  summary.innerHTML = `
+    <div class="report-card">
+      <h3>Toplam Sipariş</h3>
+      <div class="value">${adet}</div>
+    </div>
+
+    <div class="report-card">
+      <h3>Toplam Tutar</h3>
+      <div class="value">${toplamTutar} TL</div>
+    </div>
+
+    <div class="report-card">
+      <h3>Kargolanan</h3>
+      <div class="value">${kargolanan}</div>
+    </div>
+  `;
+
+  buildCharts(rows);
+}
+
+/* ===========================
+   GRAFİKLER
+=========================== */
+function buildCharts(rows) {
+
+  /* ---- Günlük Sipariş Grafiği ---- */
+  const daily = {};
+  rows.forEach(r => {
+    const d = (r.tarih || "").substring(0,10);
+    daily[d] = (daily[d] || 0) + 1;
+  });
+
+  const labels1 = Object.keys(daily);
+  const values1 = Object.values(daily);
+
+  if (chart1) chart1.destroy();
+
+  chart1 = new Chart(document.getElementById("dailyChart"), {
+    type: "line",
+    data: {
+      labels: labels1,
+      datasets: [
+        { label: "Günlük Sipariş", data: values1, borderWidth: 3 }
+      ]
     }
+  });
 
-    function renderReport(rows){
-      const table = document.getElementById("reportTable");
-      const summary = document.getElementById("summaryCards");
-      table.innerHTML = ""; summary.innerHTML = "";
+  /* ---- Sipariş Alan Kişi Grafiği ---- */
+  const byUser = {};
+  rows.forEach(r => {
+    const key = r.siparis_tel || "Bilinmiyor";
+    byUser[key] = (byUser[key] || 0) + 1;
+  });
 
-      if(!rows || rows.length===0){
-        table.innerHTML = `<tr><td colspan="6">Kayıt bulunamadı</td></tr>`;
-        return;
-      }
+  const labels2 = Object.keys(byUser);
+  const values2 = Object.values(byUser);
 
-      let toplamTutar = 0;
-      let adet = rows.length;
-      let kargolanan = rows.filter(r=>r.kargo_durumu==="Kargolandı").length;
+  if (chart2) chart2.destroy();
 
-      rows.forEach(r=>{
-        toplamTutar += Number(r.toplam_tutar || 0);
-        table.innerHTML += `
-          <tr>
-            <td>${r.siparis_no}</td>
-            <td>${r.ad_soyad}</td>
-            <td>${r.toplam_tutar} TL</td>
-            <td>${r.kargo_durumu}</td>
-            <td>${(r.tarih||'').substring(0,10)}</td>
-            <td>${r.siparis_tel}</td>
-          </tr>`;
-      });
-
-      summary.innerHTML = `
-        <div class="report-card"><h3>Toplam Sipariş</h3><div class="value">${adet}</div></div>
-        <div class="report-card"><h3>Toplam Tutar</h3><div class="value">${toplamTutar} TL</div></div>
-        <div class="report-card"><h3>Kargolanan</h3><div class="value">${kargolanan}</div></div>
-      `;
-
-      buildCharts(rows);
+  chart2 = new Chart(document.getElementById("salesByTel"), {
+    type: "bar",
+    data: {
+      labels: labels2,
+      datasets: [
+        { label: "Sipariş Sayısı", data: values2, borderWidth: 2 }
+      ]
     }
+  });
+}
 
-    function buildCharts(rows){
-      const dailyCount={};
-      rows.forEach(r=>{ const day=(r.tarih||"").substring(0,10); dailyCount[day]=(dailyCount[day]||0)+1; });
-      const dLabels = Object.keys(dailyCount); const dValues = Object.values(dailyCount);
-
-      if(chart1) chart1.destroy();
-      chart1 = new Chart(document.getElementById("dailyChart"),{
-        type:"line",
-        data:{ labels:dLabels, datasets:[{ label:"Günlük Sipariş", data:dValues, borderWidth:3 }] }
-      });
-
-      const byTel={};
-      rows.forEach(r=>{ const tel=r.siparis_tel||"Bilinmiyor"; byTel[tel]=(byTel[tel]||0)+1; });
-      const tLabels=Object.keys(byTel); const tValues=Object.values(byTel);
-
-      if(chart2) chart2.destroy();
-      chart2 = new Chart(document.getElementById("salesByTel"),{
-        type:"bar",
-        data:{ labels:tLabels, datasets:[{ label:"Sipariş Sayısı", data:tValues, borderWidth:2 }] }
-      });
-    }
-  </script>
+</script>
 
 </body>
 </html>
