@@ -30,6 +30,19 @@ let selectedOrder = null;
 
 const busy = { kargola: new Set(), barkod: new Set() };
 
+function normalize(str) {
+  return (str || "")
+    .toLowerCase()
+    .replace(/ç/g, "c")
+    .replace(/ğ/g, "g")
+    .replace(/ı/g, "i")
+    .replace(/ö/g, "o")
+    .replace(/ş/g, "s")
+    .replace(/ü/g, "u")
+    .replace(/[^a-z0-9]/g, "");
+}
+
+
 /* ============================================================
    UI HELPERS
 ============================================================ */
@@ -165,17 +178,20 @@ async function openOrder(id){
   renderDetails();
   document.getElementById("orderModal").style.display = "flex";
 }
-function closeModal(){ document.getElementById("orderModal").style.display = "none"; }
+
+function closeModal(){ 
+  document.getElementById("orderModal").style.display = "none"; 
+}
 
 function renderDetails() {
   const d = selectedOrder;
-
-  /* — ÖNCE TÜM BUTONLARI SIFIRLA — */
+   
+  /* — ÖNCE TÜM BUTONLARI RESETLE — */
   document.querySelectorAll("#actionButtons button").forEach(btn => {
     btn.style.display = "inline-block";
   });
 
-  // DETAY HTML
+  /* — DETAY HTML — */
   document.getElementById("orderDetails").innerHTML = `
     <p><b>No:</b> ${d.siparis_no}</p>
     <p><b>İsim:</b> ${d.ad_soyad}</p>
@@ -197,7 +213,9 @@ function renderDetails() {
     <p><b>Not:</b> ${d.notlar ?? "-"}</p>
   `;
 
-  /* === SOR butonu kontrolü === */
+  /* ============================================================
+      SOR BUTONU KURAL — SADECE Bekliyor ve Hazırlandı GÖRÜNECEK
+  ============================================================ */
   try {
     const sorBtn = document.querySelector(".btn-mini");
     if (sorBtn) {
@@ -209,43 +227,61 @@ function renderDetails() {
     }
   } catch (e) {}
 
-// ==== Hazırlandı DURUMUNDA DÜZENLE butonunu gizle ====
-try {
-  const duzenleBtn = [...document.querySelectorAll("#actionButtons button")]
-    .find(btn => btn.textContent.trim() === "Düzenle");
+  /* ============================================================
+      HAZIRLANDI DURUMUNDA DÜZENLE BUTONUNU GİZLE
+  ============================================================ */
+  try {
+    const duzenleBtn = [...document.querySelectorAll("#actionButtons button")]
+      .find(btn => btn.textContent.trim() === "Düzenle");
 
-  if (duzenleBtn && d.kargo_durumu === "Hazırlandı") {
-    duzenleBtn.style.display = "none";
-  }
-} catch (e) {}
-  /* — DURUM KURALLARI — */
+    if (duzenleBtn && d.kargo_durumu === "Hazırlandı") {
+      duzenleBtn.style.display = "none";
+    }
+  } catch (e) {}
+
+  /* ============================================================
+      BEKLİYOR BUTONU KURAL — 
+      Bekleyen ekranında GÖRÜNMEYECEK
+      Hazırlandı ekranında GÖRÜNECEK
+      Diğer durumlarda GÖRÜNMEYECEK
+  ============================================================ */
+  try {
+    const bekliyorBtn = document.getElementById("btnWaiting");
+
+    if (bekliyorBtn) {
+      if (d.kargo_durumu === "Bekliyor") {
+        bekliyorBtn.style.display = "none"; // bekleyen ekranda gereksiz
+      }
+      else if (d.kargo_durumu === "Hazırlandı") {
+        bekliyorBtn.style.display = "inline-block"; // hazırlandı → geri al
+      }
+      else {
+        bekliyorBtn.style.display = "none"; // diğer durumlarda gizli
+      }
+    }
+  } catch (e) {}
+
+  /* ============================================================
+      DİĞER DURUMLAR (KARGO / TAMAM / İPTAL)
+  ============================================================ */
 
   const iptal = d.kargo_durumu === "İptal";
   const kargo = d.kargo_durumu === "Kargolandı";
   const tamam = d.kargo_durumu === "Tamamlandı";
 
-  /* BEKLEYEN — HAZIRLANDI — VS DURUMLARI */
+  /* Bekliyor → Hazırla butonu */
   document.getElementById("btnPrepare").style.display =
     (d.kargo_durumu === "Bekliyor") ? "inline-block" : "none";
 
+  /* Hazırlandı → Kargola butonu */
   document.getElementById("btnCargo").style.display =
     (d.kargo_durumu === "Hazırlandı") ? "inline-block" : "none";
 
+  /* Kargolandı → Barkod Kes */
   document.getElementById("btnBarcode").style.display =
     kargo ? "inline-block" : "none";
 
-  document.getElementById("btnWaiting").style.display =
-    (!["BekBekliyor", "Kargolandı"].includes(d.kargo_durumu)) ? "inline-block" : "none";
-
-  /* — KARGOLANDI — düzenle ve diğer butonlar kapalı */
-  if (kargo) {
-    document.querySelector("#actionButtons .btn-warning").style.display = "none"; // düzenle
-    document.getElementById("btnPrepare").style.display = "none";
-    document.getElementById("btnCargo").style.display = "none";
-    document.getElementById("btnWaiting").style.display = "none";
-  }
-
-  /* — TAMAMLANAN — sadece kapat */
+  /* — TAMAMLANAN → sadece kapat — */
   if (tamam) {
     document.querySelectorAll("#actionButtons button").forEach(btn => btn.style.display = "none");
     document.querySelector("#actionButtons .btn-close").style.display = "inline-block";
@@ -258,6 +294,7 @@ try {
   document.getElementById("editButtons").style.display = "none";
   document.getElementById("cancelForm").style.display = "none";
 }
+
 
 /* ============================================================
    ŞEHİR/İLÇE KODU SOR

@@ -107,19 +107,26 @@ body{
   z-index:500;
   background:rgba(0,0,0,.45); backdrop-filter:blur(2px)
 }
+
+/* === Sipariş Detayı Modal / DAR ve UZUN Tasarım === */
 .modal-content {
-  width: min(650px, 95%);          /* daha dar → kare görünüm kaybolur */
-  max-height: 92vh;                /* daha uzun modal, tam ekranın %92'si */
-  overflow-y: auto;                /* içerik taşarsa scroll */
+  width: 550px !important;          /* DAR modal (eski kare görünüm kalkar) */
+  max-height: 92vh !important;      /* ekranın %92’sine kadar yükseklik */
+  min-height: 700px !important;     /* daha uzun görünmesi için minimum boy */
+  
+  overflow-y: auto !important;      /* içerik taşarsa kaydırma */
   background: #fff;
+  
   margin: 40px auto;
-  padding: 25px;
-  border-radius: 16px;             /* köşeleri biraz daha oval */
-  box-shadow: 0 12px 40px rgba(0,0,0,0.25);
-  animation: fadeIn .25s ease;
-  transform: scale(0.97);          /* hafif küçültme → daha premium görünüm */
+  padding: 28px;
+  border-radius: 18px;
+
+  box-shadow: 0 12px 40px rgba(0,0,0,.25);
+
+  transform: scale(0.96);           /* hafif küçült → premium görünüm */
   transform-origin: top center;
 }
+
 
 @keyframes fadeIn{ from{opacity:0; transform:translateY(-8px)} to{opacity:1; transform:none} }
 .modal h2{ margin:0 0 10px; color:var(--brand); font-size:22px }
