@@ -41,9 +41,10 @@
   <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="sidebar-header">
-      <img src="esin_logo.png" class="sidebar-logo" alt="ESİN Logo" />
-      <div class="sidebar-title">ESİN<br/>Sipariş Takip Sistemi</div>
-    </div>
+      <img id="brandLogo" class="sidebar-logo">
+      <div id="brandTitle" class="sidebar-title"></div>
+   
+      </div>
 
     <ul class="menu">
       <li id="tab_bekleyen"   class="active" onclick="setTab('bekleyen')">Bekleyen</li>
@@ -147,6 +148,17 @@
         .eq("siparis_no", selectedOrder.siparis_no)
         .then(() => { toast("Sipariş Bekliyor durumuna alındı"); closeModal(); loadOrders(true); });
     }
+    <script>
+document.addEventListener("DOMContentLoaded", async () => {
+  // Config yüklenene kadar bekle
+  while (!window.CONFIG_READY) await new Promise(r => setTimeout(r, 50));
+
+  document.getElementById("brandLogo").src = CONFIG.logo;
+  document.getElementById("brandTitle").innerHTML =
+      CONFIG.brandName + "<br>Sipariş Takip Sistemi";
+});
+</script>
+
   </script>
 
 </body>
