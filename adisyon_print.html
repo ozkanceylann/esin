@@ -2,100 +2,88 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<title>🧾 ESİN SİPARİŞ</title>
+<title>Adisyon Fişi</title>
+
+<script src="config.js"></script>
 
 <style>
+  @page { size: 80mm auto; margin: 0; }
 
-/* --- TERMAL 80mm için gerçek genişlik --- */
-@page {
-  size: 80mm auto;     /* 80mm fiş genişliği */
-  margin: 0;
-}
+  html, body {
+    width: 80mm;
+    margin: 0;
+    padding: 0 4px;
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    line-height: 1.25;
+  }
 
-html, body {
-  width: 80mm;
-  margin: 0;
-  padding: 0 4px;      /* sağ/sol çok hafif boşluk */
-  font-family: Arial, sans-serif;
-  font-size: 12px;
-  line-height: 1.25;
-}
+  .logo-box {
+    text-align: center;
+    margin: 6px 0;
+  }
 
-/* Logo */
-.logo {
-  text-align: center;
-  margin: 4px 0;
-}
+  .logo-box img {
+    width: 120px;
+    height: auto;
+  }
 
-.logo img {
-  width: 110px;
-  height: auto;
-}
+  h2 {
+    text-align: center;
+    font-size: 14px;
+    margin: 4px 0;
+  }
 
-/* Başlık */
-h2 {
-  text-align: center;
-  font-size: 13px;
-  margin: 4px 0;
-}
+  .line {
+    border-bottom: 1px dashed #000;
+    margin: 6px 0;
+  }
 
-/* Çizgi */
-.line {
-  border-bottom: 1px dashed #000;
-  margin: 4px 0;
-}
+  .row { margin: 3px 0; }
 
-/* Satır */
-.row {
-  margin: 2px 0;
-}
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 6px;
+  }
 
-/* Kutulu alan */
-.box {
-  border: 1px solid #000;
-  padding: 6px;
-  margin: 4px 0;
-}
+  table th, table td {
+    padding: 3px 0;
+    border-bottom: 1px dashed #000;
+    font-size: 12px;
+  }
 
-/* Ürün listesi */
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-table th, table td {
-  padding: 3px 0;
-  border-bottom: 1px dashed #000;
-  font-size: 12px;
-}
-
-/* Toplam satırı */
-.total-row td {
-  font-weight: bold;
-  border-top: 1px dashed #000;
-  font-size: 12px;
-}
-
+  .total-row td {
+    font-weight: bold;
+    border-top: 1px dashed #000;
+  }
 </style>
-
 </head>
+
 <body>
 
-<div class="logo">
-  <img src="esin_logo.png">
+<div class="logo-box">
+  <img id="brandLogo" src="">
 </div>
 
-<h2>🧾 ESİN SİPARİŞ FİŞİ</h2>
+<h2>ADİSYON</h2>
 
 <div id="content"></div>
 
 <script>
-  window.doPrint = function () {
-    setTimeout(() => {
-      window.print();
-      setTimeout(() => window.close(), 300);
-    }, 200);
-  };
+// LOGOYU CONFIG'TEN AL
+document.addEventListener("DOMContentLoaded", async () => {
+  await window.waitConfig();
+  document.getElementById("brandLogo").src = CONFIG.logo;
+});
+
+// ADİSYON YAZDIR
+window.doPrint = function () {
+  setTimeout(() => {
+    window.print();
+    setTimeout(() => window.close(), 300);
+  }, 200);
+};
 </script>
 
 </body>
