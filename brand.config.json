@@ -1,0 +1,15 @@
+{
+  "brand": "esin",
+  "brandName": "ESİN",
+  "logo": "esin_logo.png",
+  "favicon": "favicon.png",
+
+  "table": "esin_siparisler",
+
+  "webhooks": {
+    "kargola": "https://n8n.ozkanceylan.uk/webhook/kargola_esin",
+    "barkod": "https://n8n.ozkanceylan.uk/webhook/barkod_esin",
+    "iptal": "https://n8n.ozkanceylan.uk/webhook/kargo_iptal_esin",
+    "sehir_ilce": "https://n8n.ozkanceylan.uk/webhook/sehir_ilce_kodu_sor_esin"
+  }
+}
