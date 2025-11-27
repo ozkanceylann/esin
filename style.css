@@ -1,408 +1,257 @@
-/* ========== GENEL TASARIM ========== */
-body {
-  margin: 0;
-  padding: 0;
-  font-family: "Segoe UI", sans-serif;
-  background: #eef2f3;
-  color: #222;
+/* ==============================
+   GENEL
+============================== */
+:root{
+  --bg:#eef2f3;
+  --text:#222;
+  --brand:#3c8d0d;
+  --brand-2:#0d6efd;
+  --sidebar:#12263a;
+  --sidebar-2:#1f3a52;
+  --muted:#6c757d;
+  --danger:#d9534f;
+  --warning:#ffc107;
+  --table-head:#e9eff4;
+  --table-border:#d9e2ec;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; padding:0;
+  font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;
+  background:var(--bg); color:var(--text);
 }
 
-/* ========== SIDEBAR ========== */
-.sidebar {
-  width: 260px;
-  height: 100vh;
-  background: #12263a;
-  color: #fff;
-  position: fixed;
-  left: 0;
-  top: 0;
-  padding: 25px 15px;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 3px 0 12px rgba(0,0,0,0.25);
+/* ==============================
+   SIDEBAR & MOBİL MENÜ
+============================== */
+.sidebar{
+  width:260px; height:100vh;
+  position:fixed; left:0; top:0; z-index:999;
+  background:var(--sidebar); color:#fff;
+  padding:25px 15px; display:flex; flex-direction:column;
+  box-shadow:3px 0 12px rgba(0,0,0,.25);
+}
+.sidebar-header{ text-align:center; padding:10px 0 20px }
+.sidebar-logo{ width:130px; height:auto; display:block; margin:0 auto 8px }
+.sidebar-title{ font-size:18px; font-weight:700; line-height:1.2 }
+
+.menu{ list-style:none; padding:0; margin:35px 0 0 }
+.menu li{
+  background:var(--sidebar-2); padding:13px; margin-bottom:12px;
+  text-align:center; border-radius:8px; cursor:pointer; font-size:16px;
+  transition:.2s
+}
+.menu li:hover{ background:#24445f }
+.menu li.active{ background:var(--brand)!important; font-weight:700 }
+
+.btn-danger{
+  width:100%; margin-top:auto; padding:12px; font-size:15px;
+  background:var(--danger); color:#fff; border:none; border-radius:8px; cursor:pointer
+}
+.btn-danger:hover{ background:#c9302c }
+
+.mobile-menu-btn{
+  display:none; position:fixed; top:15px; left:15px;
+  z-index:10000; background:#12263a; color:#fff;
+  padding:10px 14px; font-size:22px; border-radius:6px; cursor:pointer
 }
 
-.sidebar-header {
-  text-align: center;
-  padding: 10px 0 20px 0;
+/* ==============================
+   ANA İÇERİK & ÜST BAR
+============================== */
+.content-area{ margin-left:260px; padding:25px; transition:.3s }
+.top-bar{ display:flex; gap:10px; margin-bottom:20px }
+.top-bar input{
+  flex:1; padding:12px; font-size:15px; border-radius:8px; border:1px solid #ccc; background:#fff
 }
-
-.sidebar-logo {
-  width: 130px;
-  height: auto;
-  display: block;
-  margin: 0 auto 8px auto;
+.btn-search,.btn-clear{
+  border:none; border-radius:8px; color:#fff; cursor:pointer; padding:12px 18px
 }
+.btn-search{ background:var(--brand) }
+.btn-clear{ background:var(--muted) }
 
-.sidebar-title {
-  font-size: 18px;
-  font-weight: 700;
-  color: #fff;
-  line-height: 1.2;
+/* ==============================
+   TABLO
+============================== */
+.table-wrapper{ width:100%; overflow-x:auto }
+.orders-table{
+  width:100%; min-width:700px;
+  border-collapse:collapse; background:#fff; border-radius:12px; overflow:hidden;
+  box-shadow:0 2px 8px rgba(0,0,0,.12)
 }
-
-/* Menüler */
-.menu {
-  list-style: none;
-  padding: 0;
-  margin-top: 35px;
+.orders-table th{
+  background:var(--table-head); color:#123; padding:14px; font-size:15px; text-align:left;
+  border-bottom:1px solid var(--table-border); white-space:nowrap
 }
-
-.menu li {
-  background: #1f3a52;
-  padding: 13px;
-  margin-bottom: 12px;
-  text-align: center;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 16px;
-  transition: 0.2s;
+.orders-table td{
+  padding:13px; border-bottom:1px solid #f0f0f0; font-size:14px; white-space:nowrap
 }
+.orders-table tr:hover{ background:#f4f9f4 }
 
-.menu li:hover {
-  background: #24445f;
+.btn-open{
+  padding:8px 12px; background:var(--brand-2);
+  border:none; border-radius:6px; color:#fff; cursor:pointer; font-size:13px
 }
-
-.menu li.active {
-  background: #3c8d0d !important;
-  font-weight: bold;
+.btn-load-more{
+  margin:20px auto; display:block; padding:12px 20px;
+  background:var(--brand-2); color:#fff; border:none; border-radius:8px; cursor:pointer
 }
+.btn-load-more:hover{ filter:brightness(.95) }
 
-/* Çıkış */
+/* ==============================
+   MODAL
+============================== */
+.modal{
+  display:none; position:fixed; inset:0;
+  z-index:500;
+  background:rgba(0,0,0,.45); backdrop-filter:blur(2px)
+}
+.modal-content{
+  width:min(600px,90%); max-height:85vh; overflow-y:auto;
+  background:#fff; margin:80px auto; padding:25px; border-radius:12px;
+  animation:fadeIn .25s ease
+}
+@keyframes fadeIn{ from{opacity:0; transform:translateY(-8px)} to{opacity:1; transform:none} }
+.modal h2{ margin:0 0 10px; color:var(--brand); font-size:22px }
+.close{ float:right; font-size:26px; cursor:pointer; color:#666 }
+
+.modal-btns{ margin-top:18px; display:flex; gap:10px; flex-wrap:wrap }
+.modal-btns button{ min-width:120px }
+
+/* BUTTONS - YENİ DÜZENLİ QUEEN STİLİ */
+.btn-primary,
+.btn-secondary,
+.btn-warning,
+.btn-waiting,
+.btn-close,
 .btn-danger {
-  width: 100%;
-  margin-top: 20px;
-  padding: 12px;
-  background: #d9534f;
-  border: none;
-  border-radius: 8px;
-  color: #fff;
-  cursor: pointer;
-  font-size: 15px;
-}
-.btn-danger:hover {
-  background: #c9302c;
-}
-
-/* ========== MOBİL MENU ========== */
-.mobile-menu-btn {
-  display: none;
-  position: fixed;
-  top: 15px;
-  left: 15px;
-  z-index: 9999;
-  background: #12263a;
-  padding: 10px 14px;
-  font-size: 22px;
-  border-radius: 6px;
-  color: #fff;
-  cursor: pointer;
-}
-
-/* ========== ANA İÇERİK ========== */
-.content-area {
-  margin-left: 260px;
-  padding: 25px;
-  transition: 0.3s;
-}
-
-.top-bar {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-.top-bar input {
-  flex: 1;
-  padding: 12px;
-  font-size: 15px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-}
-
-.btn-search {
-  background: #3c8d0d;
-  color: #fff;
-  border: none;
-  padding: 12px 20px;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-.btn-clear {
-  background: #6c757d;
-  color: #fff;
-  border: none;
-  padding: 12px 18px;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-/* ========== TABLO TASARIMI ========== */
-.table-wrapper {
-  width: 100%;
-  overflow-x: auto;
-}
-
-.orders-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: #fff;
-  border-radius: 12px;
-  overflow: hidden;
-  min-width: 700px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
-}
-
-.orders-table th {
-  background: #e9eff4;
-  padding: 14px;
-  font-size: 15px;
-  text-align: left;
-  border-bottom: 1px solid #d9e2ec;
-  white-space: nowrap;
-}
-
-.orders-table td {
-  padding: 13px;
-  border-bottom: 1px solid #f0f0f0;
-  font-size: 14px;
-  white-space: nowrap;
-}
-
-.orders-table tr:hover {
-  background: #f4f9f4;
-}
-
-/* Aç/Sorgula butonu */
-.btn-open {
-  padding: 8px 12px;
-  background: #007bff;
-  border: none;
-  border-radius: 6px;
-  color: #fff;
-  cursor: pointer;
-  font-size: 13px;
-}
-
-/* Daha Fazla */
-.btn-load-more {
-  margin: 20px auto;
-  display: block;
-  padding: 12px 20px;
-  background: #0d6efd;
-  color: #fff;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-}
-.btn-load-more:hover {
-  background: #0b5ed7;
-}
-
-/* ========== MODAL ========== */
-.modal {
-  display: none;
-  position: fixed;
-  z-index: 5000;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.45);
-  backdrop-filter: blur(2px);
-}
-
-.modal-content {
-  width: 90%;
-  max-width: 600px;
-  background: #fff;
-  margin: 80px auto;
-  padding: 25px;
-  border-radius: 12px;
-  animation: fadeIn .25s ease;
-  max-height: 85vh;
-  overflow-y: auto;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-10px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-.modal h2 {
-  margin-top: 0;
-  color: #3c8d0d;
-  font-size: 22px;
-}
-
-.close {
-  float: right;
-  font-size: 26px;
-  cursor: pointer;
-  color: #666;
-}
-
-/* Modal Butonları */
-.modal-btns {
-  margin-top: 25px;
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.btn-primary {
-  padding: 12px 16px;
-  background: #3c8d0d;
-  color: #fff;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-}
-
-.btn-secondary {
-  padding: 12px 16px;
-  background: #0d6efd;
-  color: #fff;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-}
-
-.btn-warning {
-  padding: 12px 16px;
-  background: #ffc107;
-  color: #000;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-}
-
-.btn-close {
-  background: #ccc;
-  padding: 10px 16px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  color: #000;
-  font-size: 14px;
-}
-
-.btn-waiting {
-  background: #6c757d;
-  color: #fff;
-  padding: 12px 16px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-}
-
-/* Edit ekranı */
-.edit-grid{
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-}
-.edit-grid .full-row{ grid-column: 1 / -1; }
-
-@media(max-width: 700px){
-  .edit-grid{
-    grid-template-columns: 1fr;
-  }
-}
-
-/* ========== ALERT (B-STİLİ) & TOAST ========== */
-.alert-backdrop{
-  position:fixed; inset:0;
-  background:rgba(0,0,0,.45);
-  display:flex; align-items:center; justify-content:center;
-  z-index:6000;
-}
-
-.alert-card{
-  width:min(520px,92vw);
-  background:#fff;
-  border-radius:14px;
-  padding:22px;
-  box-shadow:0 10px 30px rgba(0,0,0,.25);
-  animation:pop .18s ease;
-}
-
-@keyframes pop{
-  from{ transform:scale(.96); opacity:.6 }
-  to  { transform:scale(1); opacity:1 }
-}
-
-.alert-title{
-  font-size:18px;
-  font-weight:700;
-  margin-bottom:8px;
-  color:#12263a;
-}
-
-.alert-text{
+  padding:12px 16px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
   font-size:14px;
-  color:#333;
-  line-height:1.5;
-  margin-bottom:12px;
+  height:44px;             /* tüm butonlar eşitlendi */
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
 
-.alert-actions{
-  display:flex;
-  gap:10px;
-  justify-content:flex-end;
+/* renkler */
+.btn-primary{ background:var(--brand); color:#fff }
+.btn-secondary{ background:var(--brand-2); color:#fff }
+.btn-warning{ background:var(--warning); color:#000 }
+.btn-waiting{ background:var(--muted); color:#fff }
+.btn-close{ background:#ccc; color:#000 }
+.btn-danger{ background:var(--danger); color:#fff !important }
+
+.btn-primary:hover,
+.btn-secondary:hover,
+.btn-warning:hover,
+.btn-danger:hover,
+.btn-waiting:hover,
+.btn-close:hover{ opacity:.9 }
+
+/* Mini buton (Şehir/İlçe SOR) */
+.btn-mini{
+  display:inline-block; padding:4px 8px; font-size:12px;
+  border:none; border-radius:6px; background:var(--brand-2); color:#fff; margin-left:6px
 }
+
+/* Form alanları */
+textarea{
+  width:100%; height:90px; border-radius:8px; padding:12px; border:1px solid #ccc; font-size:14px
+}
+
+/* Düzenleme grid */
+.edit-grid{
+  display:grid; grid-template-columns:1fr 1fr; gap:14px
+}
+.edit-grid .full-row{
+  grid-column:1 / -1
+}
+
+/* ==============================
+   ALERT & TOAST
+============================== */
+.alert-backdrop{
+  position:fixed; inset:0; background:rgba(0,0,0,.45);
+  display:flex; align-items:center; justify-content:center; z-index:600
+}
+.alert-card{
+  width:min(520px,92vw); background:#fff; border-radius:14px; padding:22px;
+  box-shadow:0 10px 30px rgba(0,0,0,.25); animation:pop .18s ease
+}
+.alert-title{ font-size:18px; font-weight:700; margin:0 0 8px; color:#12263a }
+.alert-text{ font-size:14px; color:#333; line-height:1.5 }
+.alert-actions{ display:flex; gap:10px; justify-content:flex-end; margin-top:16px }
 
 .btn-ghost{
-  background:#eef2f3;
-  border:none;
-  padding:10px 14px;
-  border-radius:8px;
-  cursor:pointer;
+  background:#eef2f3; border:none; padding:10px 14px;
+  border-radius:8px; cursor:pointer; height:42px;
+}
+.btn-brand{
+  background:var(--brand); color:#fff; border:none;
+  padding:10px 14px; border-radius:8px;
+  cursor:pointer; height:42px;
 }
 
-.btn-brand{
-  background:#3c8d0d;
-  color:#fff;
-  border:none;
-  padding:10px 14px;
-  border-radius:8px;
-  cursor:pointer;
-}
+@keyframes pop{ from{ transform:scale(.98); opacity:.6 } to{ transform:scale(1); opacity:1 } }
 
 .toast{
-  position:fixed;
-  left:50%;
-  transform:translateX(-50%);
-  bottom:24px;
-  background:#12263a;
-  color:#fff;
-  padding:12px 16px;
-  border-radius:10px;
-  font-size:14px;
-  z-index:7000;
-  box-shadow:0 6px 18px rgba(0,0,0,.25);
+  position:fixed; left:50%; transform:translateX(-50%);
+  bottom:24px; background:#12263a; color:#fff; padding:12px 16px;
+  border-radius:10px; font-size:14px; z-index:700;
+  box-shadow:0 6px 18px rgba(0,0,0,.25)
 }
 
-/* ========== MOBİL ========= */
-@media(max-width: 900px) {
-  .sidebar {
-    left: -300px !important;
-    position: fixed;
-    z-index: 999;
-    transition: left .3s ease;
-  }
+/* ==============================
+   LOGIN SAYFASI
+============================== */
+body.login-page{
+  height:100vh; display:flex; align-items:center; justify-content:center;
+  background:linear-gradient(135deg,#0b2e63,#1a3d7c)
+}
+.login-box{
+  width:90%; max-width:380px; background:#fff; padding:35px; border-radius:16px;
+  box-shadow:0 10px 35px rgba(0,0,0,.35); animation:fadeInLogin .3s ease; text-align:center
+}
+@keyframes fadeInLogin{ from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:none} }
+.login-box .logo{ width:140px; margin:0 auto 20px }
+.login-box h2{ color:#1a3d7c; margin:0 0 20px; font-size:22px; font-weight:700 }
+.login-box .form-group{ margin-bottom:16px; text-align:left }
+.login-box label{ font-size:14px; font-weight:600; color:#1a3d7c }
+.login-box input{
+  width:100%; padding:12px; font-size:14px; border-radius:10px; border:1px solid #b8c6d9;
+  margin-top:6px; background:#f7f9fc
+}
+.login-box input:focus{
+  outline:none; border-color:#1a3d7c; background:#fff; box-shadow:0 0 0 2px rgba(23,78,166,.2)
+}
+.btn-login{
+  width:100%; padding:12px; font-size:15px; border:none; border-radius:10px;
+  background:#1a3d7c; color:#fff; cursor:pointer; margin-top:10px; transition:.2s
+}
+.btn-login:hover{ background:#153468 }
+.error{ margin-top:12px; color:#e74c3c; font-size:14px; display:none }
 
-  .sidebar.open {
-    left: 0 !important;
-  }
+/* ==============================
+   RAPOR SAYFASI EKLERİ
+============================== */
+canvas{ max-width:100% }
+@media (min-width:900px){
+  .content-area{ margin-left:260px!important }
+}
 
-  .mobile-menu-btn {
-    display: block;
+/* ==============================
+   MOBİL
+============================== */
+@media(max-width:900px){
+  .sidebar{
+    left:-300px!important; transition:left .3s ease; z-index:999
   }
-
-  .content-area {
-    margin-left: 0 !important;
-    padding-top: 70px;
-  }
+  .sidebar.open{ left:0!important }
+  .mobile-menu-btn{ display:block }
+  .content-area{ margin-left:0!important; padding-top:70px }
+  .edit-grid{ grid-template-columns:1fr } /* form tek kolon */
 }
