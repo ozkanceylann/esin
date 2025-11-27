@@ -174,8 +174,8 @@ function closeModal(){
 
 function renderDetails() {
   const d = selectedOrder;
-   
-  /* — ÖNCE TÜM BUTONLARI RESETLE — */
+
+  /* — TÜM BUTONLARI RESETLE — */
   document.querySelectorAll("#actionButtons button").forEach(btn => {
     btn.style.display = "inline-block";
   });
@@ -202,84 +202,86 @@ function renderDetails() {
     <p><b>Not:</b> ${d.notlar ?? "-"}</p>
   `;
 
+
   /* ============================================================
-      SOR BUTONU KURAL — SADECE Bekliyor ve Hazırlandı GÖRÜNECEK
+      1) SOR BUTONU — SADECE Bekliyor & Hazırlandı
   ============================================================ */
   try {
     const sorBtn = document.querySelector(".btn-mini");
     if (sorBtn) {
-      if (["Bekliyor", "Hazırlandı"].includes(d.kargo_durumu)) {
-        sorBtn.style.display = "inline-block";
-      } else {
-        sorBtn.style.display = "none";
-      }
+      sorBtn.style.display = ["Bekliyor", "Hazırlandı"].includes(d.kargo_durumu)
+        ? "inline-block"
+        : "none";
     }
-  } catch (e) {}
+  } catch {}
 
   /* ============================================================
-      HAZIRLANDI DURUMUNDA DÜZENLE BUTONUNU GİZLE
+      2) DÜZENLE BUTONU
+         Hazırlandı → Gizle
+         Kargolandı → Gizle  ❗ (senin istediğin)
   ============================================================ */
   try {
-    const duzenleBtn = [...document.querySelectorAll("#actionButtons button")]
-      .find(btn => btn.textContent.trim() === "Düzenle");
-
-    if (duzenleBtn && d.kargo_durumu === "Hazırlandı") {
+    const duzenleBtn = document.querySelector("#actionButtons .btn-warning");
+    if (duzenleBtn && ["Hazırlandı", "Kargolandı"].includes(d.kargo_durumu)) {
       duzenleBtn.style.display = "none";
     }
-  } catch (e) {}
+  } catch {}
+
 
   /* ============================================================
-      BEKLİYOR BUTONU KURAL — 
-      Bekleyen ekranında GÖRÜNMEYECEK
-      Hazırlandı ekranında GÖRÜNECEK
-      Diğer durumlarda GÖRÜNMEYECEK
+      3) BEKLİYOR BUTONU
+         Bekleyen → gizle
+         Hazırlandı → göster
+         Diğer durumlar → gizle
   ============================================================ */
   try {
     const bekliyorBtn = document.getElementById("btnWaiting");
 
     if (bekliyorBtn) {
       if (d.kargo_durumu === "Bekliyor") {
-        bekliyorBtn.style.display = "none"; // bekleyen ekranda gereksiz
-      }
-      else if (d.kargo_durumu === "Hazırlandı") {
-        bekliyorBtn.style.display = "inline-block"; // hazırlandı → geri al
-      }
-      else {
-        bekliyorBtn.style.display = "none"; // diğer durumlarda gizli
+        bekliyorBtn.style.display = "none";
+      } else if (d.kargo_durumu === "Hazırlandı") {
+        bekliyorBtn.style.display = "inline-block";
+      } else {
+        bekliyorBtn.style.display = "none";
       }
     }
-  } catch (e) {}
+  } catch {}
+
 
   /* ============================================================
-      DİĞER DURUMLAR (KARGO / TAMAM / İPTAL)
+      4) DİĞER BUTONLAR
   ============================================================ */
 
   const iptal = d.kargo_durumu === "İptal";
   const kargo = d.kargo_durumu === "Kargolandı";
   const tamam = d.kargo_durumu === "Tamamlandı";
 
-  /* Bekliyor → Hazırla butonu */
+  // Bekleyeni → Hazırla
   document.getElementById("btnPrepare").style.display =
-    (d.kargo_durumu === "Bekliyor") ? "inline-block" : "none";
+    d.kargo_durumu === "Bekliyor" ? "inline-block" : "none";
 
-  /* Hazırlandı → Kargola butonu */
+  // Hazırlandı → Kargola
   document.getElementById("btnCargo").style.display =
-    (d.kargo_durumu === "Hazırlandı") ? "inline-block" : "none";
+    d.kargo_durumu === "Hazırlandı" ? "inline-block" : "none";
 
-  /* Kargolandı → Barkod Kes */
+  // Kargolandı → Barkod kes
   document.getElementById("btnBarcode").style.display =
     kargo ? "inline-block" : "none";
 
-  /* — TAMAMLANAN → sadece kapat — */
+  // Tamamlandı → butonları kapat, sadece kapat butonu açık kalsın
   if (tamam) {
-    document.querySelectorAll("#actionButtons button").forEach(btn => btn.style.display = "none");
+    document.querySelectorAll("#actionButtons button").forEach(btn => {
+      btn.style.display = "none";
+    });
     document.querySelector("#actionButtons .btn-close").style.display = "inline-block";
   }
 
-  /* — İPTAL DURUMU — */
+  // İptal → tüm actionButtons gizli, restoreButtons açık
   document.getElementById("actionButtons").style.display = iptal ? "none" : "flex";
   document.getElementById("restoreButtons").style.display = iptal ? "flex" : "none";
 
+  // edit mode kapanmalı
   document.getElementById("editButtons").style.display = "none";
   document.getElementById("cancelForm").style.display = "none";
 }
