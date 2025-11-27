@@ -7,11 +7,21 @@
   <title>ESİN Sipariş Takip Sistemi</title>
 
   <link rel="stylesheet" href="style.css" />
+
+  <style>
+    .btn-mini{
+      display:inline-block;padding:4px 8px;font-size:12px;line-height:1;border-radius:6px;border:none;
+      background:#0d6efd;color:#fff;cursor:pointer;margin-left:6px;vertical-align:middle;
+    }
+    .btn-mini:hover{opacity:.9}
+    .btn-waiting{background:#6c757d;color:#fff;padding:12px 16px;border-radius:8px;border:none;cursor:pointer;}
+    .btn-close{background:#ccc;padding:10px 16px;border-radius:8px;border:none;cursor:pointer;}
+  </style>
 </head>
 
 <body>
 
-  <!-- 🛡 GÜVENLİK -->
+  <!-- Güvenlik -->
   <script>
     const firma = localStorage.getItem("firma");
     const rol = localStorage.getItem("rol");
@@ -30,51 +40,51 @@
 
   <!-- SIDEBAR -->
   <aside class="sidebar">
-
     <div class="sidebar-header">
       <img src="esin_logo.png" class="sidebar-logo" alt="ESİN Logo" />
       <div class="sidebar-title">ESİN<br/>Sipariş Takip Sistemi</div>
     </div>
 
     <ul class="menu">
-      <li id="tab_bekleyen" class="active" onclick="setTab('bekleyen')">Bekleyen</li>
-      <li id="tab_hazirlandi" onclick="setTab('hazirlandi')">Hazırlandı</li>
-      <li id="tab_kargolandi" onclick="setTab('kargolandi')">Kargolandı</li>
-      <li id="tab_iptal" onclick="setTab('iptal')">İptal</li>
+      <li id="tab_bekleyen"   class="active" onclick="setTab('bekleyen')">Bekleyen</li>
+      <li id="tab_hazirlandi"              onclick="setTab('hazirlandi')">Hazırlandı</li>
+      <li id="tab_kargolandi"              onclick="setTab('kargolandi')">Kargolandı</li>
+      <li id="tab_tamamlandi"              onclick="setTab('tamamlandi')">Tamamlananlar</li>
+      <li id="tab_sorunlu"                 onclick="setTab('sorunlu')">Sorunlu Gönderiler</li>
+      <li id="tab_iptal"                   onclick="setTab('iptal')">İptal</li>
       <li onclick="window.location='rapor.html'">Raporlar</li>
     </ul>
 
     <button class="btn-danger" style="margin-top:20px" onclick="logout()">Çıkış Yap</button>
-
   </aside>
 
-  <!-- MAIN CONTENT -->
+  <!-- MAIN -->
   <main class="content-area">
-
-    <!-- SEARCH BAR -->
     <div class="top-bar">
-      <input id="searchInput" type="text" placeholder="Sipariş No / İsim / Telefon..." />
+      <input id="searchInput" type="text" placeholder="Sipariş No / İsim / Telefon / Adres / Kargo Kodu..." />
       <button class="btn-search" onclick="searchOrders()">Ara</button>
-      <button class="btn-clear" onclick="clearSearch()">Temizle</button>
+      <button class="btn-clear"  onclick="clearSearch()">Temizle</button>
     </div>
 
-    <!-- ORDERS TABLE -->
-   <div class="table-wrapper">
-    <table class="orders-table">
-      <thead>
+    <div class="table-wrapper">
+      <table class="orders-table">
+        <thead>
         <tr>
           <th>No</th>
           <th>İsim</th>
           <th>Ürün</th>
           <th>Tutar</th>
+          <!-- Kargolandı tabında burada shipmentStatus gösterilecek -->
           <th>Durum</th>
           <th>Kargo Kod</th>
-          <th>Aç</th>
+          <!-- Kargolandı tabında “Sorgula” butonu -->
+          <th>Aç / Sorgula</th>
         </tr>
-      </thead>
-      <tbody id="ordersBody"></tbody>
-    </table>
+        </thead>
+        <tbody id="ordersBody"></tbody>
+      </table>
     </div>
+
     <button id="loadMoreBtn" class="btn-load-more" onclick="loadMore()">Daha Fazla Yükle</button>
   </main>
 
@@ -85,47 +95,59 @@
 
       <h2>Sipariş Detayı</h2>
       <div id="orderDetails"></div>
+      <!-- JS, şehir/ilçe satırına SOR butonunu ve kodları enjekte eder -->
 
-      <!-- ACTION BUTTONS -->
       <div id="actionButtons" class="modal-btns">
-        <button id="btnPrepare" class="btn-primary" onclick="markPrepared()">Hazırla</button>
-        <button id="btnCargo" class="btn-secondary" onclick="sendToCargo()">Kargola</button>
-        <button id="btnBarcode" class="btn-primary" onclick="printBarcode()" style="display:none;">Barkod Kes</button>
+        <button id="btnPrepare" class="btn-primary"   onclick="markPrepared()">Hazırla</button>
+        <button id="btnCargo"   class="btn-secondary" onclick="sendToCargo()">Kargola</button>
+        <button id="btnWaiting" class="btn-waiting"   onclick="setWaiting()">Bekliyor</button>
+        <button id="btnBarcode" class="btn-primary"   onclick="printBarcode()" style="display:none;">Barkod Kes</button>
+
         <button class="btn-warning" onclick="enterEditMode()">Düzenle</button>
-        <button class="btn-danger" onclick="openCancelForm()">İptal Et</button>
-        <button class="btn-close" onclick="closeModal()">Kapat</button>
+        <button class="btn-danger"  onclick="openCancelForm()">İptal Et</button>
+        <button class="btn-close"   onclick="closeModal()">Kapat</button>
       </div>
 
-      <!-- EDIT BUTTONS -->
       <div id="editButtons" class="modal-btns" style="display:none;">
         <button class="btn-secondary" onclick="saveEdit()">Kaydet</button>
-        <button class="btn-danger" onclick="cancelEdit()">Vazgeç</button>
-        <button class="btn-close" onclick="closeModal()">Kapat</button>
+        <button class="btn-danger"   onclick="cancelEdit()">Vazgeç</button>
+        <button class="btn-close"    onclick="closeModal()">Kapat</button>
       </div>
 
-      <!-- RESTORE BUTTONS -->
       <div id="restoreButtons" class="modal-btns" style="display:none;">
         <button class="btn-secondary" onclick="restoreOrder()">Geri Al</button>
-        <button class="btn-close" onclick="closeModal()">Kapat</button>
+        <button class="btn-close"    onclick="closeModal()">Kapat</button>
       </div>
 
-      <!-- CANCEL FORM -->
       <div id="cancelForm" style="display:none;margin-top:20px;">
         <h3>İptal Nedeni</h3>
         <textarea id="iptalInput" placeholder="Neden iptal edildi?"></textarea>
         <div class="modal-btns">
           <button class="btn-danger" onclick="confirmCancel()">İptal Et</button>
-          <button class="btn-close" onclick="cancelCancelForm()">Vazgeç</button>
+          <button class="btn-close"  onclick="cancelCancelForm()">Vazgeç</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- ALERT ROOT (B-stili modal için) -->
+  <!-- ALERT ROOT -->
   <div id="alertRoot"></div>
 
+  <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- App -->
   <script src="app.js"></script>
+
+  <script>
+    // Marka-özel “Bekliyor” kısayolu
+    function setWaiting() {
+      if (!selectedOrder) return;
+      db.from("esin_siparisler")
+        .update({ kargo_durumu: "Bekliyor" })
+        .eq("siparis_no", selectedOrder.siparis_no)
+        .then(() => { toast("Sipariş Bekliyor durumuna alındı"); closeModal(); loadOrders(true); });
+    }
+  </script>
 
 </body>
 </html>
