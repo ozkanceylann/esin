@@ -34,60 +34,80 @@
   </style>
 </head>
 <body>
+  <div class="mobile-menu-btn" onclick="toggleMenu()">☰</div>
 
-<div class="content-area" style="margin-left:260px; padding:25px;">
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <img id="brandLogo" class="sidebar-logo" alt="Logo">
+      <div id="brandTitle" class="sidebar-title"></div>
+    </div>
 
-  <h2 style="margin-bottom:14px;">📊 Raporlama Ekranı</h2>
+    <ul class="menu">
+      <li onclick="window.location='index.html'">Bekleyen</li>
+      <li onclick="window.location='index.html'">Hazırlandı</li>
+      <li onclick="window.location='index.html'">Kargolandı</li>
+      <li onclick="window.location='index.html'">Tamamlananlar</li>
+      <li onclick="window.location='index.html'">Sorunlu</li>
+      <li onclick="window.location='index.html'">İptal</li>
+      <li class="active">Raporlar</li>
+    </ul>
 
-  <!-- FİLTRE ARAÇLARI -->
-  <div class="toolbar">
-    <label><b>Başlangıç:</b></label><input type="date" id="startDate"/>
-    <label><b>Bitiş:</b></label><input type="date" id="endDate"/>
+    <button class="btn-danger" onclick="window.location='login.html'">Çıkış Yap</button>
+  </aside>
 
-    <label><b>Durum:</b></label>
-    <select id="statusSel">
-      <option value="">Hepsi</option>
-      <option>Bekliyor</option>
-      <option>Hazırlandı</option>
-      <option>Kargolandı</option>
-      <option>Tamamlandı</option>
-      <option>Sorunlu</option>
-      <option>İptal</option>
-    </select>
+  <div class="content-area">
 
-    <button class="btn-primary" onclick="loadReport()">Raporla</button>
-    <button class="btn-secondary" onclick="exportCSV()">CSV İndir</button>
-    <button class="btn-close" onclick="window.location='index.html'">Geri</button>
+    <h2 style="margin-bottom:14px;">📊 Raporlama Ekranı</h2>
+
+    <!-- FİLTRE ARAÇLARI -->
+    <div class="toolbar">
+      <label><b>Başlangıç:</b></label><input type="date" id="startDate"/>
+      <label><b>Bitiş:</b></label><input type="date" id="endDate"/>
+
+      <label><b>Durum:</b></label>
+      <select id="statusSel">
+        <option value="">Hepsi</option>
+        <option>Bekliyor</option>
+        <option>Hazırlandı</option>
+        <option>Kargolandı</option>
+        <option>Tamamlandı</option>
+        <option>Sorunlu</option>
+        <option>İptal</option>
+      </select>
+
+      <button class="btn-primary" onclick="loadReport()">Raporla</button>
+      <button class="btn-secondary" onclick="exportExcel()">Excel İndir</button>
+      <button class="btn-close" onclick="window.location='index.html'">Geri</button>
+    </div>
+
+    <div id="summaryCards" style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:20px;"></div>
+
+    <div style="background:#fff;padding:20px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.12);margin-bottom:20px;">
+      <h3>📈 Günlük Sipariş</h3>
+      <canvas id="dailyChart" style="max-height:300px;"></canvas>
+    </div>
+
+    <div style="background:#fff;padding:20px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.12);margin-bottom:20px;">
+      <h3>📞 Sipariş Alan</h3>
+      <canvas id="salesByTel" style="max-height:300px;"></canvas>
+    </div>
+
+    <div class="table-wrapper">
+      <table class="orders-table">
+        <thead>
+          <tr>
+            <th>No</th>
+            <th>İsim</th>
+            <th>Tutar</th>
+            <th>Durum</th>
+            <th>Tarih</th>
+            <th>Sipariş Alan</th>
+          </tr>
+        </thead>
+        <tbody id="reportTable"></tbody>
+      </table>
+    </div>
   </div>
-
-  <div id="summaryCards" style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:20px;"></div>
-
-  <div style="background:#fff;padding:20px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.12);margin-bottom:20px;">
-    <h3>📈 Günlük Sipariş</h3>
-    <canvas id="dailyChart" style="max-height:300px;"></canvas>
-  </div>
-
-  <div style="background:#fff;padding:20px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.12);margin-bottom:20px;">
-    <h3>📞 Sipariş Alan (Telefon)</h3>
-    <canvas id="salesByTel" style="max-height:300px;"></canvas>
-  </div>
-
-  <div class="table-wrapper">
-    <table class="orders-table">
-      <thead>
-        <tr>
-          <th>No</th>
-          <th>İsim</th>
-          <th>Tutar</th>
-          <th>Durum</th>
-          <th>Tarih</th>
-          <th>Sipariş Alan Tel</th>
-        </tr>
-      </thead>
-      <tbody id="reportTable"></tbody>
-    </table>
-  </div>
-</div>
 
 
 
@@ -97,6 +117,9 @@
 <script>
 (async ()=>{
   await window.waitConfig();
+
+  document.getElementById("brandLogo").src = CONFIG.logo;
+  document.getElementById("brandTitle").innerHTML = CONFIG.brandName + "<br/>Sipariş Sistemi";
 
   const TABLE = CONFIG.table;
   const db = supabase.createClient(
@@ -142,7 +165,7 @@
 
     if(!rows.length){
       table.innerHTML = `<tr><td colspan="6">Kayıt yok</td></tr>`;
-      buildCharts([]); 
+      buildCharts([]);
       return;
     }
 
@@ -157,7 +180,7 @@
           <td>${r.toplam_tutar} TL</td>
           <td>${r.kargo_durumu}</td>
           <td>${(r.tarih||"").substring(0,10)}</td>
-          <td>${r.siparis_tel||""}</td>
+          <td>${r.siparis_alan||""}</td>
         </tr>`;
     });
 
@@ -195,7 +218,7 @@
 
     const byTel={};
     rows.forEach(r=>{
-      const key=r.siparis_tel||"Bilinmiyor";
+      const key=r.siparis_alan||"Bilinmiyor";
       byTel[key]=(byTel[key]||0)+1;
     });
 
@@ -214,28 +237,34 @@
 
 
   /* ==============================
-        CSV EXPORT
+        EXCEL EXPORT
   ============================== */
-  function exportCSV(){
+  function exportExcel(){
     if(!lastRows.length){ alert("Dışa aktarılacak veri yok"); return; }
 
-    const headers = ["siparis_no","ad_soyad","toplam_tutar","kargo_durumu","tarih","siparis_tel"];
+    const headers = ["No","İsim","Tutar","Durum","Tarih","Sipariş Alan"];
 
     const rows = lastRows.map(r=>[
       r.siparis_no, r.ad_soyad, r.toplam_tutar,
       r.kargo_durumu, (r.tarih||"").substring(0,19),
-      r.siparis_tel||""
+      r.siparis_alan||""
     ]);
 
-    const csv = [
-      headers.join(","), 
-      ...rows.map(a=>a.map(x=>`"${String(x??"").replace(/"/g,'""')}"`).join(","))
-    ].join("\n");
+    const tableHtml = `
+      <table>
+        <thead><tr>${headers.map(h=>`<th>${h}</th>`).join("")}</tr></thead>
+        <tbody>
+          ${rows.map(row=>`<tr>${row.map(cell=>`<td>${String(cell??"")}</td>`).join("")}</tr>`).join("")}
+        </tbody>
+      </table>
+    `;
 
-    const blob = new Blob([csv],{type:"text/csv;charset=utf-8;"});
+    const blob = new Blob(["\ufeff" + tableHtml], { type:"application/vnd.ms-excel" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href=url; a.download="rapor.csv"; a.click();
+    a.href = url;
+    a.download = "rapor.xls";
+    a.click();
     URL.revokeObjectURL(url);
   }
 
@@ -244,12 +273,24 @@
        GLOBAL EXPORT
   ============================== */
   window.loadReport = loadReport;
-  window.exportCSV = exportCSV;
+  window.exportExcel = exportExcel;
 
   /* BAŞLANGIÇTA OTOMATİK RAPOR YÜKLE */
   loadReport();
 
 })();
+
+function toggleMenu(){
+  document.querySelector(".sidebar").classList.toggle("open");
+}
+
+document.addEventListener("click", e=>{
+  const sidebar = document.querySelector(".sidebar");
+  const btn = document.querySelector(".mobile-menu-btn");
+  if(!sidebar.classList.contains("open")) return;
+  if(sidebar.contains(e.target) || btn.contains(e.target)) return;
+  sidebar.classList.remove("open");
+});
 </script>
 
 </body>
