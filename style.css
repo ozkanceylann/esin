@@ -1,3 +1,5 @@
+
+
 /* ==============================
    GENEL
 ============================== */
@@ -26,7 +28,7 @@ body{
    SIDEBAR & MOBİL MENÜ
 ============================== */
 .sidebar{
-  width:260px; height:100vh;
+  width:220px; height:100vh;
   position:fixed; left:0; top:0; z-index:999;
   background:var(--sidebar); color:#fff;
   padding:25px 15px; display:flex; flex-direction:column;
@@ -38,15 +40,15 @@ body{
 
 .menu{ list-style:none; padding:0; margin:35px 0 0 }
 .menu li{
-  background:var(--sidebar-2); padding:13px; margin-bottom:12px;
-  text-align:center; border-radius:8px; cursor:pointer; font-size:16px;
+  background:var(--sidebar-2); padding:8px 10px; margin-bottom:12px;
+  text-align:center; border-radius:8px; cursor:pointer; font-size:13px;
   transition:.2s
 }
 .menu li:hover{ background:#24445f }
 .menu li.active{ background:var(--brand)!important; font-weight:700 }
 
 .btn-danger{
-  width:100%; margin-top:auto; padding:12px; font-size:15px;
+  width:100%; margin-top:auto; padding:10px; font-size:13px;
   background:var(--danger); color:#fff; border:none; border-radius:8px; cursor:pointer
 }
 .btn-danger:hover{ background:#c9302c }
@@ -60,7 +62,7 @@ body{
 /* ==============================
    ANA İÇERİK & ÜST BAR
 ============================== */
-.content-area{ margin-left:260px; padding:25px; transition:.3s }
+.content-area{ margin-left:220px; padding:25px; transition:.3s }
 .top-bar{ display:flex; gap:10px; margin-bottom:20px }
 .top-bar input{
   flex:1; padding:12px; font-size:15px; border-radius:8px; border:1px solid #ccc; background:#fff
@@ -81,11 +83,11 @@ body{
   box-shadow:0 2px 8px rgba(0,0,0,.12)
 }
 .orders-table th{
-  background:var(--table-head); color:#123; padding:14px; font-size:15px; text-align:left;
+  background:var(--table-head); color:#123; padding:10px; font-size:12px; text-align:left;
   border-bottom:1px solid var(--table-border); white-space:nowrap
 }
 .orders-table td{
-  padding:13px; border-bottom:1px solid #f0f0f0; font-size:14px; white-space:nowrap
+  padding:10px; border-bottom:1px solid #f0f0f0; font-size:12px; white-space:nowrap
 }
 .orders-table tbody tr,
 .orders-table tbody tr td{
@@ -366,7 +368,7 @@ body.login-page{
 ============================== */
 canvas{ max-width:100% }
 @media (min-width:900px){
-  .content-area{ margin-left:260px!important }
+  .content-area{ margin-left:220px!important }
 }
 
 /* ==============================
@@ -381,23 +383,25 @@ canvas{ max-width:100% }
   .content-area{ margin-left:0!important; padding-top:70px }
   .edit-grid{ grid-template-columns:1fr } /* form tek kolon */
 }
+
+
 #actionButtons {
   display: flex;
-  flex-wrap: wrap;        /* Alt satır oluşturmaya izin ver */
+  flex-wrap: nowrap;
   gap: 10px;
-  align-items: stretch;
 }
 
 #actionButtons button {
-  flex: 1 1 160px;        /* Üst satırdaki butonlar sabit genişlik */
+  flex: 1;        /* Hepsi eşit genişlik */
+  min-width: 0;   /* Taşmayı önler */
 }
 
-/* Kapat butonu altta tek satır */
+/* Kapat butonu özel davranmasın → ESKİ KURAL SİLİNECEK */
 #actionButtons .btn-close {
-  flex-basis: 100%;
-  order: 99;
-  justify-content: center;
+  flex-basis: auto !important;
+  order: unset !important;
 }
+
 
 /* İptal Et butonu mutlaka üst satırda */
 #actionButtons .btn-danger {

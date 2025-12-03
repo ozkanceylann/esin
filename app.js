@@ -84,6 +84,16 @@ function toggleLoadMore(visible){
   btn.style.display = visible ? "block" : "none";
 }
 
+// Sidebar menü tıklanınca otomatik kapanması (mobil)
+document.querySelectorAll(".sidebar .menu li").forEach(item => {
+  item.addEventListener("click", () => {
+    const sidebar = document.querySelector(".sidebar");
+    if (sidebar.classList.contains("open")) {
+      sidebar.classList.remove("open"); // KAPAT
+    }
+  });
+});
+
 function confirmModal({title, text, confirmText="Onayla", cancelText="Vazgeç"}){
   return new Promise(res=>{
     const root = document.getElementById("alertRoot");
@@ -126,8 +136,8 @@ async function loadOrders(reset=false){
   if(currentTab==="bekleyen")   q = q.eq("kargo_durumu","Bekliyor");
   if(currentTab==="hazirlandi") q = q.eq("kargo_durumu","Hazırlandı");
   if(currentTab==="kargolandi") q = q.eq("kargo_durumu","Kargolandı");
-  if(currentTab==="tamamlandi") q = q.eq("kargo_durumu","Tamamlandı");
-  if(currentTab==="sorunlu")    q = q.eq("kargo_durumu","Sorunlu");
+  if(currentTab==="tamamlandi") q=q.eq("shipmentStatusCode",5);
+  if(currentTab==="sorunlu")    q=q.in("shipmentStatusCode",[6,7]); // 6: sorunlu, 7: iade
   if(currentTab==="iptal")      q = q.eq("kargo_durumu","İptal");
 
   const start = (currentPage - 1) * PAGE_SIZE;
@@ -825,20 +835,39 @@ async function restoreOrder(){
 /* ============================================================
    ARAMA
 ============================================================ */
-async function searchOrders(){
-  const q = document.getElementById("searchInput").value.trim();
-  if(!q) return loadOrders(true);
+async function searchOrders() {
+  const qRaw = document.getElementById("searchInput").value.trim();
+  if (!qRaw) return loadOrders(true);
 
-  const { data } = await db.from(TABLE).select("*").or(`
-    siparis_no.eq.${q},
-    ad_soyad.ilike.%${q}%,
-    siparis_tel.ilike.%${q}%,
-    musteri_tel.ilike.%${q}%,
-    adres.ilike.%${q}%,
-    kargo_takip_kodu.ilike.%${q}%
-  `);
-  renderTable(data, { append:false, hasMore:false });
+  // TÜRKÇE KARAKTER TEMİZLİĞİ + LOWERCASE
+  const q = qRaw
+    .toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, ""); // aksan temizleme: ö→o, ç→c
+
+  // Supabase V2 için OR query TEK SATIR olmalı!
+  const orQuery = [
+    `siparis_no.eq.${qRaw}`,         // sipariş no sayı olduğu için raw kullanılacak
+    `ad_soyad.ilike.%${q}%`,
+    `siparis_tel.ilike.%${q}%`,
+    `musteri_tel.ilike.%${q}%`,
+    `adres.ilike.%${q}%`,
+    `kargo_takip_kodu.ilike.%${q}%`
+  ].join(",");
+
+  const { data, error } = await db
+    .from(TABLE)
+    .select("*")
+    .or(orQuery);
+
+  if (error) {
+    console.error("Arama Hatası:", error);
+    toast("Arama yapılırken bir hata oluştu!");
+    return;
+  }
+
+  renderTable(data, { append: false, hasMore: false });
 }
+
 
 function clearSearch(){
   document.getElementById("searchInput").value="";
@@ -915,6 +944,22 @@ function printSiparis(order){
     if(inject() || tries>40) clearInterval(t);
   }, 100);
 }
+/* ============================================================
+   ENNTER İLE ARA 
+============================================================ */
+
+// ENTER ile arama
+document.addEventListener("DOMContentLoaded", () => {
+  const input = document.getElementById("searchInput");
+  if (!input) return;
+
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();   // Sayfanın yenilenmesini engeller
+      searchOrders();       // 🔥 Aramayı tetikler
+    }
+  });
+});
 
 /* ============================================================
    GLOBAL EXPORT
@@ -922,6 +967,7 @@ function printSiparis(order){
 Object.assign(window, {
   logout,
   loadOrders,
+   loadMore,
   setTab,
   searchOrders,
   clearSearch,
