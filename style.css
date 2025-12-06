@@ -407,3 +407,120 @@ canvas{ max-width:100% }
 #actionButtons .btn-danger {
   order: 1;
 }
+
+/* ============================
+   SİPARİŞ DETAYI YENİ TASARIM
+============================ */
+.detail-group {
+  background: #f9fbfd;
+  border: 1px solid #e0e6ed;
+  border-radius: 14px;
+  padding: 16px 18px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 18px rgba(0,0,0,.06);
+}
+
+.detail-title {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: #0d2451;
+}
+
+.detail-item {
+  margin: 6px 0;
+  font-size: 14px;
+}
+
+.detail-item b {
+  color: #183153;
+}
+
+.modal-content {
+  background: linear-gradient(to bottom right, #ffffff, #f4f7fb);
+  border: 1px solid #dfe6ee;
+  box-shadow: 0 18px 50px rgba(0,0,0,0.20);
+  padding: 28px;
+  border-radius: 20px;
+}
+
+/* =========================================
+   YENİ BELIDO LOGIN TASARIMI (Örnekteki ile aynı)
+========================================= */
+body.login-page {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #062d20; /* koyu yeşil zemin */
+  margin: 0;
+  font-family: "Segoe UI", system-ui, sans-serif;
+}
+
+.login-card {
+  width: 92%;
+  max-width: 480px;
+  background: linear-gradient(180deg, #ffe08a, #d9b35b);
+  padding: 40px 45px;
+  border-radius: 22px;
+  text-align: center;
+  box-shadow: 0 12px 45px rgba(0,0,0,.35);
+}
+
+.login-card img.logo {
+  width: 160px;
+  margin-bottom: 20px;
+}
+
+.login-card h2 {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 28px;
+  color: #123;
+}
+
+.login-card .form-group {
+  text-align: left;
+  margin-bottom: 18px;
+}
+
+.login-card label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.login-card input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  margin-top: 6px;
+  background: #fff;
+  font-size: 14px;
+}
+
+.btn-login {
+  width: 100%;
+  padding: 13px;
+  background: #0c271b;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: .2s;
+}
+
+.btn-login:hover {
+  background: #081e15;
+}
+
+.login-error {
+  color: #a60000;
+  font-size: 14px;
+  margin-top: 12px;
+  display: none;
+}
+
