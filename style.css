@@ -523,3 +523,72 @@ body.login-page {
   margin-top: 12px;
   display: none;
 }
+
+/* ================================================
+   SİPARİŞ DETAYI – PREMIUM GRUPLU TASARIM
+=================================================== */
+
+.modal-content {
+  background: linear-gradient(to bottom right, #ffffff, #f4f7fb);
+  border: 1px solid #dfe6ee;
+  box-shadow: 0 18px 50px rgba(0,0,0,0.20);
+  padding: 28px;
+  border-radius: 20px;
+
+  width: 520px !important;
+  max-height: 90vh !important;
+  overflow-y: auto !important;
+
+  transform: scale(0.97);
+  animation: fadeIn .25s ease-out;
+}
+
+#orderDetails {
+  font-size: 13px;
+  line-height: 1.35;
+  color: #123;
+}
+
+/* Grup kutuları */
+.detail-group {
+  background: #f9fbfd;
+  border: 1px solid #e0e6ed;
+  border-radius: 14px;
+  padding: 16px 18px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 18px rgba(0,0,0,.06);
+}
+
+.detail-title {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: #0d2451;
+}
+
+.detail-item {
+  font-size: 13px;
+  margin: 5px 0;
+}
+
+.detail-item b {
+  color: #183153;
+}
+
+/* Başlık */
+.modal h2 {
+  font-size: 20px;
+  letter-spacing: 0.5px;
+  margin-bottom: 18px;
+  color: var(--brand);
+}
+
+/* Close X */
+.close {
+  font-size: 24px;
+  color: #666;
+  transition: .2s;
+}
+.close:hover {
+  color: #000;
+}

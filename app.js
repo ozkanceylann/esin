@@ -382,28 +382,46 @@ function renderDetails() {
   });
 
   /* — DETAY HTML — */
-  document.getElementById("orderDetails").innerHTML = `
-    <p><b>No:</b> ${d.siparis_no}</p>
-    <p><b>İsim:</b> ${d.ad_soyad}</p>
-    <p><b>Sipariş Alan:</b> ${d.siparis_alan ?? "-"}</p>
-    <p><b>Sipariş Alan Tel:</b> ${d.siparis_tel}</p>
-    <p><b>Müşteri Tel:</b> ${d.musteri_tel}</p>
-    <p><b>Adres:</b> ${d.adres}</p>
+document.getElementById("orderDetails").innerHTML = `
+  <div class="detail-group">
+    <div class="detail-title">🔹 Genel Bilgiler</div>
+    <div class="detail-item"><b>No:</b> ${d.siparis_no}</div>
+    <div class="detail-item"><b>İsim:</b> ${d.ad_soyad}</div>
+    <div class="detail-item"><b>Sipariş Alan:</b> ${d.siparis_alan ?? "-"}</div>
+  </div>
 
-    <p>
+  <div class="detail-group">
+    <div class="detail-title">📞 İletişim</div>
+    <div class="detail-item"><b>Sipariş Alan Tel:</b> ${d.siparis_tel}</div>
+    <div class="detail-item"><b>Müşteri Tel:</b> ${d.musteri_tel}</div>
+  </div>
+
+  <div class="detail-group">
+    <div class="detail-title">📍 Adres Bilgileri</div>
+    <div class="detail-item"><b>Adres:</b> ${d.adres}</div>
+    <div class="detail-item">
       <b>Şehir / İlçe:</b> ${d.sehir} / ${d.ilce}
       <button class="btn-mini" onclick="queryCityDistrictCodes()">Sor</button>
-      <br><small>Kodlar: ${d.sehir_kodu ?? "-"} / ${d.ilce_kodu ?? "-"}</small>
-    </p>
+    </div>
+    <div class="detail-item">
+      <small>Kodlar: ${d.sehir_kodu ?? "-"} / ${d.ilce_kodu ?? "-"}</small>
+    </div>
+  </div>
 
-    <p><b>Ürün:</b> ${parseProduct(d.urun_bilgisi)}</p>
-    <p><b>Adet:</b> ${d.kargo_adet ?? "-"}</p>
-    <p><b>KG:</b> ${d.kargo_kg ?? "-"}</p>
-    <p><b>Tutar:</b> ${d.toplam_tutar} TL</p>
-    <p><b>Ödeme:</b> ${d.odeme_sekli}</p>
-    <p><b>Not:</b> ${d.notlar ?? "-"}</p>
-  `;
+  <div class="detail-group">
+    <div class="detail-title">📦 Ürün Bilgisi</div>
+    <div class="detail-item"><b>Ürün:</b> ${parseProduct(d.urun_bilgisi)}</div>
+    <div class="detail-item"><b>Adet:</b> ${d.kargo_adet ?? "-"}</div>
+    <div class="detail-item"><b>KG:</b> ${d.kargo_kg ?? "-"}</div>
+    <div class="detail-item"><b>Tutar:</b> ${d.toplam_tutar} TL</div>
+    <div class="detail-item"><b>Ödeme:</b> ${d.odeme_sekli}</div>
+  </div>
 
+  <div class="detail-group">
+    <div class="detail-title">📝 Not</div>
+    <div class="detail-item">${d.notlar ?? "-"}</div>
+  </div>
+`;
 
   /* ============================================================
       1) SOR BUTONU — SADECE Bekliyor & Hazırlandı
