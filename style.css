@@ -524,3 +524,70 @@ body.login-page {
   display: none;
 }
 
+/* ============================================
+   🍏 CARD POPUP – modern modal tasarımı
+============================================ */
+
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(6px);          /* blur efekti */
+  
+  display: flex;
+  align-items: center;                 /* TAM ORTA */
+  justify-content: center;
+}
+
+.modal-content {
+  width: 420px !important;
+  max-height: 82vh !important;
+
+  background: #ffffff;
+  border-radius: 18px !important;
+
+  padding: 24px !important;
+  overflow-y: auto !important;
+
+  box-shadow: 0 18px 60px rgba(0,0,0,0.28),
+              0 6px 18px rgba(0,0,0,0.18);
+
+  transform: scale(0.90) translateY(15px);
+  opacity: 0;
+  animation: cardPopup 0.28s ease-out forwards;
+}
+
+/* Card açılış animasyonu */
+@keyframes cardPopup {
+  from {
+    opacity: 0;
+    transform: scale(0.90) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0px);
+  }
+}
+
+/* Scrollbar yumuşatma */
+.modal-content::-webkit-scrollbar {
+  width: 6px;
+}
+.modal-content::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 5px;
+}
+
+/* X kapatma butonu daha modern görünsün */
+.close {
+  font-size: 22px !important;
+  color: #666 !important;
+  transition: 0.2s;
+}
+.close:hover {
+  color: #000 !important;
+  transform: scale(1.15);
+}
