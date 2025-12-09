@@ -255,6 +255,25 @@ function escapeHtml(str=""){
     .replace(/'/g, "&#039;");
 }
 
+function formatStatus(status) {
+  if (!status) return "-";
+  const s = status.toLowerCase();
+
+  const map = {
+    "bekliyor": "status-bekliyor",
+    "hazırlandı": "status-hazirlandi",
+    "kargolandı": "status-kargolandi",
+    "sorunlu": "status-sorunlu",
+    "i̇ptal": "status-iptal",
+    "iptal": "status-iptal",
+    "tamamlandı": "status-tamamlandi"
+  };
+
+  const cls = map[s] ?? "";
+  return `<span class="status-pill ${cls}">${status}</span>`;
+}
+
+
 /* ============================================================
    KARGO SORGULAMA
 ============================================================ */
