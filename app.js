@@ -322,6 +322,43 @@ function showErrorDetail(message=""){
 }
 
 /* ============================================================
+   API ÖNİZLEME POPUP (tek örnek, güvenli)
+============================================================ */
+function showApiResult(content) {
+  const root = document.getElementById("alertRoot");
+  // Önce var olanı sil (tek örnek olsun)
+  root.querySelectorAll(".alert-backdrop").forEach(n => n.remove());
+
+  const wrap = document.createElement("div");
+  wrap.className = "alert-backdrop";
+  // Backdrop tıklamasıyla kapansın (karta tıklamada kapanmasın)
+  wrap.addEventListener("click", (e) => {
+    if (e.target === wrap) wrap.remove();
+  });
+
+  // İçerik: PNG <img> ya da metin (ZPL/JSON)
+  const isString = typeof content === "string";
+  const html = isString && content.trim().startsWith("<img")
+    ? content
+    : `<textarea class="error-detail-text" readonly>${
+        isString ? content : JSON.stringify(content, null, 2)
+      }</textarea>`;
+
+  wrap.innerHTML = `
+    <div class="alert-card" style="pointer-events:auto">
+      <div class="alert-title">API Yanıtı</div>
+      <div class="alert-text">${html}</div>
+      <div class="alert-actions">
+        <button class="btn-brand" id="apiOkBtn">Kapat</button>
+      </div>
+    </div>
+  `;
+  root.appendChild(wrap);
+
+  wrap.querySelector("#apiOkBtn").onclick = () => wrap.remove();
+}
+
+/* ============================================================
    DETAY
 ============================================================ */
 async function openOrder(id){
@@ -758,54 +795,139 @@ Bu işlem normal şartlarda geri alınamaz ve iptal durumunda kargo firması ek 
   if(busy.kargola.has(key)) return toast("Bu sipariş zaten işleniyor.");
   busy.kargola.add(key);
 
-  try{
-    await fetch(WH_KARGOLA, {
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify(selectedOrder)
-    });
+try{
+const res = await fetch(WH_KARGOLA, {
+  method:"POST",
+  headers:{ "Content-Type":"application/json" },
+  body: JSON.stringify(selectedOrder)
+});
 
-    toast("Kargoya gönderildi.");
+const data = await res.json();
 
-    // 🔥 1 saniye sonra listeyi yenile
-    setTimeout(() => {
-      loadOrders(true);
-    }, 1000);
+// Artık data içindeki bilgileri gösterebilirsin
+console.log("N8N cevabı:", data);
 
-  }catch(e){
-    toast("Gönderim hatası");
-  }finally{
-    setTimeout(()=>busy.kargola.delete(key), 20000);
+
+  let payload = {};
+  try { payload = await res.json(); } catch {}
+
+  // Kısa bildirim
+  toast(payload?.message || "Kargoya gönderildi.");
+
+  // PNG geldiyse göster
+  if (payload?.png) {
+    showApiResult(`<img src="${payload.png}" style="max-width:360px;border:1px solid #ccc;border-radius:8px">`);
   }
+  // ZPL/JSON geldiyse metin olarak göster
+  else if (payload?.apiResult || payload?.zpl || payload?.result) {
+    showApiResult(payload.apiResult || payload.zpl || payload.result);
+  }
+
+  setTimeout(()=>loadOrders(true), 1000);
+}catch(e){
+  toast("Gönderim hatası");
+}finally{
+  setTimeout(()=>busy.kargola.delete(key), 20000);
 }
 
+}
 
-async function printBarcode(){
+async function printBarcode() {
+
   const ok = await confirmModal({
-    title:"Barkod Kes",
-    text:"Barkod isteği gönderilecek.",
-    confirmText:"Gönder",
-    cancelText:"Vazgeç"
+    title: "Barkod Kes",
+    text: "Supabase içerisindeki barkod PDF/PNG dosyaları açılacak.",
+    confirmText: "Aç",
+    cancelText: "Vazgeç"
   });
-  if(!ok) return;
+  if (!ok) return;
 
-  const key = selectedOrder.siparis_no;
-  if(busy.barkod.has(key)) return toast("Barkod zaten bekliyor");
-  busy.barkod.add(key);
+  // Supabase'den veriyi çek
+  const { data, error } = await db
+    .from(TABLE)
+    .select("zpl_base64")
+    .eq("siparis_no", selectedOrder.siparis_no)
+    .single();
 
-  try{
-    await fetch(WH_BARKOD, {
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify(selectedOrder)
-    });
-    toast("Barkod gönderildi");
-  }catch(e){
-    toast("Barkod hatası!");
-  }finally{
-    setTimeout(()=>busy.barkod.delete(key), 20000);
+  if (error) return toast("Barkod alınamadı!");
+  if (!data?.zpl_base64) return toast("Barkod bulunamadı!");
+
+  let raw = data.zpl_base64;
+  let list = [];
+
+  // JSON formatını çöz
+  try {
+    const parsed = JSON.parse(raw);
+
+    if (Array.isArray(parsed)) {
+      list = parsed
+        .map(item => {
+          if (!item) return null;
+          if (typeof item === "string") return item;
+          if (typeof item === "object" && item.data) return item.data;
+          return null;
+        })
+        .filter(x => !!x);
+    } else list = [raw];
+
+  } catch {
+    list = [raw];
   }
+
+  if (!list.length) return toast("Geçerli barkod bulunamadı!");
+
+  // Base64 → Blob çevirici
+  function base64ToBlob(base64, mime) {
+    const binary = atob(base64);
+    const len = binary.length;
+    const buffer = new Uint8Array(len);
+    for (let i = 0; i < len; i++) buffer[i] = binary.charCodeAt(i);
+    return new Blob([buffer], { type: mime });
+  }
+
+  // Her barkodu ayrı sekmede aç
+  list.forEach(b64 => {
+    if (typeof b64 !== "string") return;
+
+    const trimmed = b64.trim();
+
+    // PDF / PNG algılaması
+    let mime = "application/pdf";
+    if (trimmed.startsWith("iVBOR")) mime = "image/png";
+
+    // Blob'a çevir
+    const blob = base64ToBlob(trimmed, mime);
+    const blobUrl = URL.createObjectURL(blob);
+
+    // Yeni sekme aç
+    const w = window.open("", "_blank");
+    if (!w) {
+      toast("Pop-up engellendi, izin ver.");
+      return;
+    }
+
+    // Chrome PDF bug fix → iframe içinde aç
+    w.document.write(`
+      <html>
+      <head>
+        <title>Barkod</title>
+        <style>
+          body { margin:0; padding:0; overflow:hidden; background:#000; }
+          iframe { border:0; width:100vw; height:100vh; }
+        </style>
+      </head>
+      <body>
+        <iframe src="${blobUrl}"></iframe>
+      </body>
+      </html>
+    `);
+    w.document.close();
+  });
+
+  toast(list.length + " adet barkod açıldı.");
 }
+
+
 
 /* ============================================================
    İPTAL / GERİ AL
