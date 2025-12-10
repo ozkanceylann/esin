@@ -52,7 +52,7 @@ function renderTableHeader(){
 
   head.innerHTML = currentTab === "bekleyen"
     ? `
-      <th>No</th>
+      <th>S.No</th>
       <th>İsim</th>
       <th>Ürün</th>
       <th>Tutar</th>
@@ -60,13 +60,13 @@ function renderTableHeader(){
       <th>Sipariş Alan</th>
     `
     : `
-      <th>No</th>
+      <th>S.No</th>
       <th>İsim</th>
       <th>Ürün</th>
       <th>Tutar</th>
       <th>Durum</th>
       <th>Kargo Kod</th>
-      <th>Aç / Sorgula</th>
+      <th>Hata Mesajı</th>
     `;
 }
 
@@ -194,12 +194,15 @@ function renderTable(rows, { append=false, hasMore } = {}){
     ? `<button class="btn-open" onclick="event.stopPropagation(); openTrackingUrl('${o.kargo_takip_url ?? ""}')">Sorgula</button>`
     : `<button class="btn-open">Aç</button>`;
 
-  const errorPreview = isPreparedTab
-    ? `<button class="error-chip" onclick="event.stopPropagation(); showErrorDetail(${JSON.stringify(o.gonder_hata_bilgisi ?? "")})" title="Detayı görmek için tıkla">
-         <span class="error-chip__label">Hata</span>
-         <span class="error-chip__text">${escapeHtml(shortenError(o.gonder_hata_bilgisi))}</span>
-       </button>`
-    : actionBtn;
+const errorPreview = isPreparedTab
+  ? `<button class="error-chip"
+        data-error="${escapeHtml(o.gonder_hata_bilgisi ?? "")}"
+        onclick="event.stopPropagation(); showErrorDetail(this.dataset.error)">
+        <span class="error-chip__label">Hata</span>
+        <span class="error-chip__text">${escapeHtml(shortenError(o.gonder_hata_bilgisi))}</span>
+     </button>`
+  : actionBtn;
+
 
 
     tr.innerHTML = isPendingTab

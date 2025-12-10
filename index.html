@@ -152,6 +152,15 @@
   <!-- SUPABASE -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+
+  <script>
+document.getElementById("orderModal").addEventListener("click", function(e){
+  const box = document.querySelector(".modal-content");
+  if (!box.contains(e.target)) closeModal();
+});
+</script>
+
+
   <!-- APP -->
   <script src="app.js" type="module"></script>
 

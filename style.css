@@ -76,65 +76,121 @@ body{
 /* ==============================
    TABLO
 ============================== */
-.table-wrapper{ width:100%; overflow-x:auto }
+.table-wrapper{
+  width:100%;
+  overflow-x:auto;
+}
+
 .orders-table{
-  width:100%; min-width:700px;
-  border-collapse:collapse; background:#fff; border-radius:12px; overflow:hidden;
-  box-shadow:0 2px 8px rgba(0,0,0,.12)
+  width:100%;
+  min-width:700px;
+  border-collapse:collapse;
+  background:#fff;
+  border-radius:12px;
+  overflow:hidden;
+  box-shadow:0 2px 8px rgba(0,0,0,.12);
 }
+
+/* TABLO BAŞLIKLARI — TÜM SEKMEDE AYNI */
 .orders-table th{
-  background:var(--table-head); color:#123; padding:10px; font-size:12px; text-align:left;
-  border-bottom:1px solid var(--table-border); white-space:nowrap
+  background:var(--table-head);
+  color:#123;
+  padding:10px !important;
+  font-size:12px !important;
+  text-align:left;
+  border-bottom:1px solid var(--table-border);
+  white-space:nowrap;
+  height:30px !important;         
+  line-height:16px !important;
 }
+
+/* TABLO HÜCRELERİ — TÜM SEKMEDE AYNI */
 .orders-table td{
-  padding:10px; border-bottom:1px solid #f0f0f0; font-size:12px; white-space:nowrap
-}
-.orders-table tbody tr,
-.orders-table tbody tr td{
-  cursor:pointer;
-  user-select:none;
-}
-.orders-table tr:hover{
-  background:#d8e9d8;
-  box-shadow:inset 4px 0 var(--brand);
+  padding:10px !important;
+  font-size:12px !important;
+  border-bottom:1px solid #f0f0f0;
+  white-space:nowrap;
+  height:30px !important;         
+  line-height:16px !important;
 }
 
+/* ============================================
+   SATIR YÜKSEKLİĞİNİ BOZAN ÖĞELERİ DÜZELTME
+============================================ */
+
+/* Sorgula / Aç butonu — daha küçük */
 .btn-open{
-  padding:8px 12px; background:var(--brand-2);
-  border:none; border-radius:6px; color:#fff; cursor:pointer; font-size:13px
+  height:22px !important;
+  padding:0 10px !important;
+  font-size:11px !important;
+  line-height:1 !important;
+
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+
+  background:var(--brand-2) !important;
+  color:#fff !important;
+  border:none !important;
+  border-radius:6px !important;
+
+  white-space:nowrap;
 }
 
+/* Error chip — RENKLER GERİ YÜKLENDİ ve satırı şişirmez */
 .error-chip{
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
-  padding:8px 10px;
-  max-width:240px;
-  background:#fcebea;
-  color:#9b1c1c;
-  border:1px solid #f5c6cb;
-  border-radius:8px;
+  height:24px !important;
+  padding:0 8px !important;
+  gap:6px !important;
+
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+
+  background:#fcebea !important;      /* renk geri geldi */
+  color:#9b1c1c !important;
+  border:1px solid #f5c6cb !important;
+  border-radius:8px !important;
+  max-width:240px !important;
   cursor:pointer;
 }
 
 .error-chip__label{
   font-weight:700;
-  font-size:12px;
+  font-size:11px !important;
   text-transform:uppercase;
   letter-spacing:.5px;
+  line-height:1 !important;
+  color:#9b1c1c !important;
 }
 
 .error-chip__text{
-  font-size:13px;
+  font-size:12px !important;
+  line-height:1 !important;
+  color:#9b1c1c !important;
   white-space:nowrap;
   overflow:hidden;
   text-overflow:ellipsis;
 }
+
+/* Load more */
 .btn-load-more{
-  margin:20px auto; display:block; padding:12px 20px;
-  background:var(--brand-2); color:#fff; border:none; border-radius:8px; cursor:pointer
+  margin:20px auto;
+  display:block;
+  padding:12px 20px;
+  background:var(--brand-2);
+  color:#fff;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
 }
-.btn-load-more:hover{ filter:brightness(.95) }
+.btn-load-more:hover{
+  filter:brightness(.95);
+}
+.orders-table tr:hover td {
+  background:#d8e9d8 !important;
+}
+
 
 /* ==============================
    MODAL
@@ -408,41 +464,6 @@ canvas{ max-width:100% }
   order: 1;
 }
 
-/* ============================
-   SİPARİŞ DETAYI YENİ TASARIM
-============================ */
-.detail-group {
-  background: #f9fbfd;
-  border: 1px solid #e0e6ed;
-  border-radius: 14px;
-  padding: 16px 18px;
-  margin-bottom: 16px;
-  box-shadow: 0 4px 18px rgba(0,0,0,.06);
-}
-
-.detail-title {
-  font-size: 15px;
-  font-weight: 700;
-  margin-bottom: 10px;
-  color: #0d2451;
-}
-
-.detail-item {
-  margin: 6px 0;
-  font-size: 14px;
-}
-
-.detail-item b {
-  color: #183153;
-}
-
-.modal-content {
-  background: linear-gradient(to bottom right, #ffffff, #f4f7fb);
-  border: 1px solid #dfe6ee;
-  box-shadow: 0 18px 50px rgba(0,0,0,0.20);
-  padding: 28px;
-  border-radius: 20px;
-}
 
 /* =========================================
    YENİ BELIDO LOGIN TASARIMI (Örnekteki ile aynı)
@@ -591,4 +612,105 @@ body.login-page {
 }
 .close:hover {
   color: #000;
+}
+
+/* ============================================================
+   iOS CAM – RENKLERİ KORUYAN BUTON SİSTEMİ (FINAL)
+============================================================ */
+
+/* --- BAR TAMAMEN ŞEFFAF (sadece butonlar görünecek) --- */
+#actionButtons,
+#editButtons,
+#restoreButtons {
+  position: sticky;
+  bottom: 0;
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  padding: 14px 10px !important;
+  border: none !important;
+  box-shadow: none !important;
+  display: flex;
+  gap: 10px;
+  z-index: 50;
+}
+
+/* --- BUTON RENKLERİNİ BOZMAYAN CAM EFEKTİ --- */
+#actionButtons button,
+#editButtons button,
+#restoreButtons button {
+  position: relative;
+  overflow: hidden;
+
+  /* kendi rengini kullanacak → cam efekti üst katman olacak */
+  background: var(--btn-color, currentColor) !important;
+
+  padding: 12px 16px !important;
+  border: none !important;
+  border-radius: 14px !important;
+
+  color: inherit !important;
+  font-weight: 600;
+
+  box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+  transition: .2s ease;
+}
+
+/* CAM PARLAMA KATMANI */
+#actionButtons button::after,
+#editButtons button::after,
+#restoreButtons button::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+
+  /* iOS glass highlight */
+  background:
+    radial-gradient(100% 55% at 30% 0%, rgba(255,255,255,.22), rgba(255,255,255,0) 60%),
+    linear-gradient(to bottom, rgba(255,255,255,.10), rgba(255,255,255,.03));
+}
+
+/* HOVER */
+#actionButtons button:hover,
+#editButtons button:hover,
+#restoreButtons button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px rgba(0,0,0,0.18);
+}
+
+/* --- BUTON RENKLERİNİ TEKRAR TANIMLIYORUZ (OVERRIDE) --- */
+#actionButtons .btn-primary,
+#editButtons .btn-primary,
+#restoreButtons .btn-primary { --btn-color: var(--brand); color:#fff !important; }
+
+#actionButtons .btn-secondary,
+#editButtons .btn-secondary,
+#restoreButtons .btn-secondary { --btn-color: var(--brand-2); color:#fff !important; }
+
+#actionButtons .btn-warning,
+#editButtons .btn-warning,
+#restoreButtons .btn-warning { --btn-color: var(--warning); color:#000 !important; }
+
+#actionButtons .btn-waiting,
+#editButtons .btn-waiting,
+#restoreButtons .btn-waiting { --btn-color: var(--muted); color:#fff !important; }
+
+#actionButtons .btn-close,
+#editButtons .btn-close,
+#restoreButtons .btn-close { --btn-color: #ccc; color:#000 !important; }
+
+#actionButtons .btn-danger,
+#editButtons .btn-danger,
+#restoreButtons .btn-danger { --btn-color: var(--danger); color:#fff !important; }
+
+/* Satırın üzerine gelince yazı imleci (text cursor) çıkmasını tamamen engeller */
+.orders-table tr {
+  cursor: default !important;
+}
+
+.orders-table td, 
+.orders-table th {
+  cursor: default !important;
 }
