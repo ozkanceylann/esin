@@ -46,28 +46,37 @@ function getColumnCount(){
   return currentTab === "bekleyen" ? 6 : 7;
 }
 
+function shouldShowNoteColumn(tab) {
+  return ["bekleyen", "hazirlandi"].includes(tab);
+}
+
+function shouldShowCargoCode(tab) {
+  return ["kargolandi", "tamamlandi", "sorunlu"].includes(tab);
+}
+
 function renderTableHeader(){
   const head = document.getElementById("ordersHeadRow");
   if(!head) return;
 
   head.innerHTML = currentTab === "bekleyen"
-    ? `
-      <th>S.No</th>
-      <th>İsim</th>
-      <th>Ürün</th>
-      <th>Tutar</th>
-      <th>Durum</th>
-      <th>Sipariş Alan</th>
-    `
-    : `
-      <th>S.No</th>
-      <th>İsim</th>
-      <th>Ürün</th>
-      <th>Tutar</th>
-      <th>Durum</th>
-      <th>Kargo Kod</th>
-      <th>Hata Mesajı</th>
-    `;
+  ? `
+    <th>S.No</th>
+    <th>İsim</th>
+    <th>Ürün</th>
+    <th>Tutar</th>
+    <th>Not</th>
+    <th>Sipariş Alan</th>
+  `
+  : `
+    <th>S.No</th>
+    <th>İsim</th>
+    <th>Ürün</th>
+    <th>Tutar</th>
+    <th>Durum</th>
+    <th>Not</th>
+    <th>Hata Mesajı</th>
+  `;
+
 }
 
 function toast(msg, ms=2500){
@@ -117,6 +126,27 @@ function confirmModal({title, text, confirmText="Onayla", cancelText="Vazgeç"})
 function logout(){
   localStorage.clear();
   location.href = "login.html";
+}
+
+
+function formatDateTimeTR(iso) {
+  if (!iso) return "-";
+
+  const d = new Date(iso);
+  if (isNaN(d)) return iso;
+
+  const date = d.toLocaleDateString("tr-TR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric"
+  });
+
+  const time = d.toLocaleTimeString("tr-TR", {
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+
+  return `${date} • ${time}`;
 }
 
 /* ============================================================
@@ -204,33 +234,68 @@ const errorPreview = isPreparedTab
   : actionBtn;
 
 
+// Not chip'i (Hata chip'i ile aynı class)
+const noteChip = `
+  <button class="error-chip"
+      data-note="${escapeHtml(o.notlar ?? "")}"
+      onclick="event.stopPropagation(); showNoteDetail(this.dataset.note)">
+      <span class="error-chip__label">Not</span>
+      <span class="error-chip__text">${escapeHtml(shortenNote(o.notlar, 20))}</span>
+  </button>
+`;
 
-    tr.innerHTML = isPendingTab
-      ? `
-        <td>${o.siparis_no}</td>
-        <td>${o.ad_soyad}</td>
-        <td>${parseProduct(o.urun_bilgisi)}</td>
-        <td>${o.toplam_tutar} TL</td>
-        <td>${durumText}</td>
-        <td>${o.siparis_alan ?? "-"}</td>
-      `
-      : `
-        <td>${o.siparis_no}</td>
-        <td>${o.ad_soyad}</td>
-        <td>${parseProduct(o.urun_bilgisi)}</td>
-        <td>${o.toplam_tutar} TL</td>
-        <td>${durumText}</td>
-        <td>${o.kargo_takip_kodu ?? "-"}</td>
-        <td>${errorPreview}</td>
-      `;
+tr.innerHTML = isPendingTab
+  ? `
+    <td>${o.siparis_no}</td>
+    <td>${o.ad_soyad}</td>
+    <td>
+  <span class="order-product-limit"
+        title="${escapeHtml(parseProduct(o.urun_bilgisi))}">
+    ${escapeHtml(parseProduct(o.urun_bilgisi))}
+  </span>
+</td>
 
-    tr.addEventListener("click", (e)=>{
-      if(e.target.classList.contains("btn-open") || e.target.closest(".error-chip")) return;
-      openOrder(o.siparis_no);
-    });
+    <td>${o.toplam_tutar} TL</td>
+    <td>${noteChip}</td>
+    <td>${o.siparis_alan ?? "-"}</td>
+  `
+  : `
+    <td>${o.siparis_no}</td>
+    <td>${o.ad_soyad}</td>
+    <td>
+  <span class="order-product-limit"
+        title="${escapeHtml(parseProduct(o.urun_bilgisi))}">
+    ${escapeHtml(parseProduct(o.urun_bilgisi))}
+  </span>
+</td>
 
-    tbody.appendChild(tr);
-  });
+    <td>${o.toplam_tutar} TL</td>
+<td>${durumText}</td>
+
+<td>
+  ${
+    shouldShowNoteColumn(currentTab)
+      ? noteChip
+      : (o.kargo_takip_kodu ?? "-")
+  }
+</td>
+
+<td>${errorPreview}</td>
+
+  `;
+
+// Satır tıklama kontrolü (chip'e tıklayınca detay açılmasın)
+tr.addEventListener("click", (e)=>{
+  if (
+    e.target.classList.contains("btn-open") ||
+    e.target.closest(".error-chip")
+  ) return;
+  openOrder(o.siparis_no);
+});
+
+
+tbody.appendChild(tr);
+});
 
   if(typeof hasMore === "boolean") toggleLoadMore(hasMore);
 }
@@ -248,6 +313,11 @@ function shortenError(text, max=55){
   if(text.length <= max) return text;
   return text.slice(0, max) + "...";
 }
+function shortenNote(text, max = 40){
+  if (!text) return "";
+  return text.length <= max ? text : text.slice(0, max) + "...";
+}
+
 
 function escapeHtml(str=""){
   return str
@@ -258,6 +328,43 @@ function escapeHtml(str=""){
     .replace(/'/g, "&#039;");
 }
 
+function showNoteDetail(note = "") {
+  console.log("NOT CLICK:", note); // 🔥 DEBUG (bunu görmelisin)
+
+  if (!note) {
+    toast("Not bilgisi yok");
+    return;
+  }
+
+  const root = document.getElementById("alertRoot");
+  if (!root) {
+    alert(note); // fallback
+    return;
+  }
+
+  // varsa eskisini kapat
+  root.querySelectorAll(".alert-backdrop").forEach(n => n.remove());
+
+  const wrap = document.createElement("div");
+  wrap.className = "alert-backdrop";
+  wrap.innerHTML = `
+    <div class="alert-card">
+      <div class="alert-title">📝 Sipariş Notu</div>
+      <div class="alert-text">
+        <textarea class="error-detail-text" readonly>${note}</textarea>
+      </div>
+      <div class="alert-actions">
+        <button class="btn-brand" id="noteCloseBtn">Kapat</button>
+      </div>
+    </div>
+  `;
+
+  root.appendChild(wrap);
+
+  wrap.querySelector("#noteCloseBtn").onclick = () => wrap.remove();
+}
+
+
 /* ============================================================
    KARGO SORGULAMA
 ============================================================ */
@@ -265,6 +372,55 @@ function openTrackingUrl(url){
   if(!url) return toast("Kargo sorgulama linki yok.");
   window.open(url, "_blank");
 }
+
+function printEtiket(){
+  localStorage.setItem("print_order", JSON.stringify(selectedOrder));
+  window.open("printetiket.html", "_blank", "width=320,height=240");
+}
+function openPrintChooser(){
+  const root = document.getElementById("alertRoot");
+  root.innerHTML = "";
+
+  const wrap = document.createElement("div");
+  wrap.className = "alert-backdrop";
+
+  wrap.innerHTML = `
+    <div class="alert-card">
+      <div class="alert-title">🖨 Yazdırma Seçimi</div>
+
+      <div class="alert-actions" style="flex-direction:column;gap:10px">
+        <button class="btn-primary" id="btnPrintAdisyon">
+          🧾 Adisyon Yazdır
+        </button>
+
+        <button class="btn-secondary" id="btnPrintEtiket">
+          🏷 Etiket Yazdır (40×60)
+        </button>
+
+        <button class="btn-close" id="btnCancelPrint">
+          Vazgeç
+        </button>
+      </div>
+    </div>
+  `;
+
+  root.appendChild(wrap);
+
+  // 🔥 JS EVENT BIND (EN KRİTİK KISIM)
+  document.getElementById("btnPrintAdisyon").onclick = () => {
+    printSiparis(selectedOrder);
+  };
+
+  document.getElementById("btnPrintEtiket").onclick = () => {
+    printEtiket();
+  };
+
+  document.getElementById("btnCancelPrint").onclick = () => {
+    wrap.remove();
+  };
+}
+
+
 
 /* ============================================================
    İPTALDEN SİLME
@@ -387,15 +543,20 @@ function renderDetails() {
   /* — DETAY HTML — */
 document.getElementById("orderDetails").innerHTML = `
   <div class="detail-group">
-    <div class="detail-title">🔹 Genel Bilgiler</div>
     <div class="detail-item"><b>No:</b> ${d.siparis_no}</div>
-    <div class="detail-item"><b>İsim:</b> ${d.ad_soyad}</div>
     <div class="detail-item"><b>Sipariş Alan:</b> ${d.siparis_alan ?? "-"}</div>
+    <div class="detail-item"><b>Sipariş Alan Tel:</b> ${d.siparis_tel}</div>    
+    <div class="detail-item" style="margin-top:6px;">
+  <span class="pill pill-date">
+    📅 ${formatDateTimeTR(d.tarih)}
+  </span>
+</div>
+
   </div>
 
   <div class="detail-group">
-    <div class="detail-title">📞 İletişim</div>
-    <div class="detail-item"><b>Sipariş Alan Tel:</b> ${d.siparis_tel}</div>
+    <div class="detail-title">📞Müşteri İletişim</div>    
+    <div class="detail-item"><b>İsim:</b> ${d.ad_soyad}</div>
     <div class="detail-item"><b>Müşteri Tel:</b> ${d.musteri_tel}</div>
   </div>
 
@@ -420,10 +581,22 @@ document.getElementById("orderDetails").innerHTML = `
     <div class="detail-item"><b>Ödeme:</b> ${d.odeme_sekli}</div>
   </div>
 
-  <div class="detail-group">
-    <div class="detail-title">📝 Not</div>
-    <div class="detail-item">${d.notlar ?? "-"}</div>
-  </div>
+<div class="detail-group">
+  <div class="detail-title">📝 Not</div>
+
+  ${
+    d.notlar
+      ? `
+        <div class="note-card">
+          <div class="note-text">${escapeHtml(d.notlar)}</div>
+        </div>
+      `
+      : `
+        <div class="note-empty">Not girilmemiş</div>
+      `
+  }
+</div>
+
 `;
 
   /* ============================================================
@@ -790,7 +963,7 @@ async function markPrepared(){
     .update({ kargo_durumu:"Hazırlandı" })
     .eq("siparis_no", selectedOrder.siparis_no);
 
-  printSiparis(selectedOrder);
+  openPrintChooser(); // ✅ artık seçim soruyor
 
   toast("Sipariş Hazırlandı");
   closeModal();
@@ -1227,10 +1400,12 @@ Object.assign(window, {
 
   queryCityDistrictCodes,
 deleteCanceledOrder,
+showNoteDetail,
 
+  openPrintChooser,
   printSiparis,
+  printEtiket
 });
-
 /* ============================================================
    BAŞLAT
 ============================================================ */

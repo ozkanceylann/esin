@@ -714,3 +714,54 @@ body.login-page {
 .orders-table th {
   cursor: default !important;
 }
+/* Order listesi – ürün adı limiti */
+.order-product-limit {
+  max-width: 640px;       /* gerekirse 200-260 arası oynat */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-block;
+  vertical-align: middle;
+}
+/* Tarih pill */
+.pill-date {
+  background: rgba(13,110,253,0.12);
+  color: #2d7d27;
+  border: 1px solid rgba(2, 45, 6, 0.25);
+  font-weight: 600;
+  padding: 6px 10px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+/* =========================
+   SİPARİŞ NOTU – DETAY
+========================= */
+.note-card {
+  background: linear-gradient(135deg, #fff7e6, #fffaf0);
+  border: 1px solid rgba(255, 193, 7, 0.35);
+  border-left: 5px solid #ffc107;
+
+  padding: 12px 14px;
+  border-radius: 10px;
+
+  font-size: 13px;
+  line-height: 1.5;
+  color: #5c4700;
+
+  max-height: 110px;          /* 🔒 çok uzamasın */
+  overflow-y: auto;
+}
+
+.note-text {
+  white-space: pre-wrap;      /* alt satırlar korunsun */
+}
+
+/* Not yoksa */
+.note-empty {
+  font-size: 12px;
+  color: #999;
+  font-style: italic;
+}

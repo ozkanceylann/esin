@@ -71,5 +71,32 @@
     }
     window.login = login;
   </script>
+    <!-- SAYFA İÇERİĞİ -->
+
+  <!-- 🔁 SERVICE WORKER AUTO UPDATE -->
+  <script>
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("/service-worker.js").then(reg => {
+
+      reg.addEventListener("updatefound", () => {
+        const newWorker = reg.installing;
+        if (!newWorker) return;
+
+        newWorker.addEventListener("statechange", () => {
+          if (newWorker.state === "activated") {
+            if (navigator.serviceWorker.controller) {
+              console.log("🔄 Yeni sürüm aktif → yenileniyor");
+              location.reload();
+            }
+          }
+        });
+      });
+
+    });
+  }
+  </script>
+</body>
+</html>
+
 </body>
 </html>
